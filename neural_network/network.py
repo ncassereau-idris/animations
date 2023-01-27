@@ -3,7 +3,12 @@ import typing
 from .connection_animation import LineAnim, NeuronFocusAndRelax
 
 class Network(VGroup):
-    def __init__(self, arch: typing.List[typing.Optional[int]], radius=0.05, **kwargs):
+
+    def __init__(
+        self, arch: typing.List[typing.Optional[int]],
+        radius: float = 0.05, standard_duration: float = 0.375,
+        **kwargs
+    ):
         super().__init__(**kwargs)
         # arch contains ghost layers to artificially stretch the network
         self.arch = [i for i in arch if i is not None]
@@ -11,6 +16,7 @@ class Network(VGroup):
         self.input_color = GREY
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
+        self.standard_duration = standard_duration
         self.make(arch)
 
     def make(self, ghost_arch):
@@ -64,39 +70,43 @@ class Network(VGroup):
         else:
             return self.length(0) # by convention last relax is as long as first one
 
+    def animation_duration(self, idx):
+        return self.standard_duration * self.length(idx) / 2
+
     def comms_animation(self, idx, length, **kwargs):
-        length = min(line.get_length() for line in self.comms[idx])
         group = [
             LineAnim(
                 line,
                 color=self.highlight_color,
-                run_time=.375 * length,
+                run_time=self.standard_duration * length,
                 **kwargs
             ) for line in self.comms[idx]
         ]
         return AnimationGroup(*group)
-    
-    def forward_animation(self, **kwargs):
-        focus, relax = NeuronFocusAndRelax(
-            self.layers[0],
-            color=self.highlight_color,
-            run_time_focus=0.375,
-            run_time_relax=0.375 * self.length(0) / 2,
-        )
-        anim = focus
 
+    def focus_relax(self, idx):
+        if idx == 0:
+            layer = self.layers[0]
+            t1, t2 = 0, 0
+        else:
+            layer = self.layers[idx]
+            t1, t2 = idx - 1, idx
+        return NeuronFocusAndRelax(
+            layer,
+            color=self.highlight_color,
+            run_time_focus=self.animation_duration(t1),
+            run_time_relax=self.animation_duration(t2)
+        )
+
+    def forward_animation(self, **kwargs):
+        focus, relax = self.focus_relax(0)
+        anim = focus
         for i in range(len(self.arch) - 1):
             relaxation = AnimationGroup(
                 relax,
                 self.comms_animation(i, self.length(i), **kwargs)
             )
-            focus, relax = NeuronFocusAndRelax(
-                self.layers[i + 1],
-                color=self.highlight_color,
-                run_time_focus=0.375 * self.length(i) / 2,
-                run_time_relax=0.375 * self.length(i+1) / 2,
-            )
+            focus, relax = self.focus_relax(i + 1)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)
             anim = Succession(anim, next_focus)
-        anim = Succession(anim, relax)
-        return anim
+        return Succession(anim, relax)

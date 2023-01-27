@@ -5,40 +5,26 @@ from .connection_animation import LineAnim, NeuronFocusAndRelax
 class Network(VGroup):
     def __init__(self, arch: typing.List[typing.Optional[int]], radius=0.05, **kwargs):
         super().__init__(**kwargs)
-        self.ghost_arch = arch # with ghost node to artificially stretch the network
+        # arch contains ghost layers to artificially stretch the network
         self.arch = [i for i in arch if i is not None]
-        self.n_ghosts = self.compute_number_ghosts()
         self.radius = radius
         self.input_color = GREY
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
-        self.make()
+        self.make(arch)
 
-    def compute_number_ghosts(self):
-        # compute the number of ghosts between each layer so that the runtime
-        # can be proportional with respect to the distance between layers
-        n_ghosts = []
-        for i in range(len(self.ghost_arch) - 1):
-            if self.ghost_arch[i] is not None:
-                n_ghosts.append(0)
-            else:
-                n_ghosts[-1] += 1
-        n_ghosts.append(0)
-        return n_ghosts
-
-
-    def make(self):
+    def make(self, ghost_arch):
         self.layers = [
             self.make_layer(neurons, i==0)
             if neurons is not None else Dot()
-            for i, neurons in enumerate(self.ghost_arch)
+            for i, neurons in enumerate(ghost_arch)
         ]
         VGroup(*self.layers).arrange(RIGHT)
 
         self.layers = VGroup(*[
             self.layers[i]
-            for i in range(len(self.ghost_arch))
-            if self.ghost_arch[i] is not None
+            for i in range(len(ghost_arch))
+            if ghost_arch[i] is not None
         ])
 
         self.comms = VGroup(*[
@@ -69,12 +55,22 @@ class Network(VGroup):
                 ))
         return comms
 
-    def comms_animation(self, idx, **kwargs):
+    def length(self, idx): # length between layer idx and idx+1
+        if idx < len(self.layers) - 1:
+            return Line(
+                self.layers[idx].get_center(),
+                self.layers[idx+1].get_center()
+            ).get_length()
+        else:
+            return self.length(0) # by convention last relax is as long as first one
+
+    def comms_animation(self, idx, length, **kwargs):
+        length = min(line.get_length() for line in self.comms[idx])
         group = [
             LineAnim(
                 line,
                 color=self.highlight_color,
-                run_time=.375 * (1 + self.n_ghosts[idx]),
+                run_time=.375 * length,
                 **kwargs
             ) for line in self.comms[idx]
         ]
@@ -85,17 +81,20 @@ class Network(VGroup):
             self.layers[0],
             color=self.highlight_color,
             run_time_focus=0.375,
-            run_time_relax=0.375 * (1 + self.n_ghosts[0]) / 2,
+            run_time_relax=0.375 * self.length(0) / 2,
         )
         anim = focus
 
         for i in range(len(self.arch) - 1):
-            relaxation = AnimationGroup(relax, self.comms_animation(i, **kwargs))
+            relaxation = AnimationGroup(
+                relax,
+                self.comms_animation(i, self.length(i), **kwargs)
+            )
             focus, relax = NeuronFocusAndRelax(
                 self.layers[i + 1],
                 color=self.highlight_color,
-                run_time_focus=0.375 * (1 + self.n_ghosts[i]) / 2,
-                run_time_relax=0.375 * (1 + self.n_ghosts[i + 1]) / 2,
+                run_time_focus=0.375 * self.length(i) / 2,
+                run_time_relax=0.375 * self.length(i+1) / 2,
             )
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)
             anim = Succession(anim, next_focus)

@@ -6,23 +6,39 @@ from .connection_animation import LineAnim, NeuronFocusAndRelax
 class Layer(VGroup):
 
     def __init__(
-        self, neurons: int, color=ORANGE, radius: float = 0.05, **kwargs
+        self, neurons: int, color=GRAY, radius: float = 0.05,
+        highlight_color=ORANGE, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.neurons = neurons
         self.color = color
+        self.highlight_color = highlight_color
         self.add(*[
             Dot(color=color, radius=radius, z_index=1000)
             for _ in range(neurons)
         ])
         self.arrange(UP)
 
+    def focus_and_relax(self, run_time_focus, run_time_relax):
+        return NeuronFocusAndRelax(
+            self,
+            color=self.highlight_color,
+            run_time_focus=run_time_focus,
+            run_time_relax=run_time_relax,
+            rate_func=linear
+        )
+
 
 class Connections(VGroup):
 
-    def __init__(self, layer1, layer2, dashed=True, **kwargs):
+    def __init__(
+        self, layer1, layer2, color=ORANGE, dashed: bool = True, **kwargs
+    ) -> None:
         super().__init__(**kwargs)
         self.dashed = dashed
+        self.layer1 = layer1
+        self.layer2 = layer2
+        self.color = color
         lines = [
             self.make_line(start, end, dashed=dashed)
             for start in layer1
@@ -48,6 +64,25 @@ class Connections(VGroup):
                 z_index=500
             )
 
+    @property
+    def length(self):
+        return Line(
+            self.layer1.get_center(),
+            self.layer2.get_center()
+        ).get_length()
+
+    def forward_animation(self, duration, **kwargs):
+        length = self.length
+        group = [
+            LineAnim(
+                line,
+                color=self.color,
+                run_time=duration * length,
+                **kwargs
+            ) for line in self
+        ]
+        return AnimationGroup(*group)
+
 
 class Network(VGroup):
 
@@ -71,8 +106,9 @@ class Network(VGroup):
         self.layers = [
             Layer(
                 neurons,
-                self.input_color if i == 0 else self.hidden_layer_color,
-                self.radius
+                color=self.input_color if i == 0 else self.hidden_layer_color,
+                radius=self.radius,
+                highlight_color=self.highlight_color
             )
             if neurons is not None else Dot()
             for i, neurons in enumerate(ghost_arch)
@@ -85,50 +121,22 @@ class Network(VGroup):
             if ghost_arch[i] is not None
         ])
 
-        self.comms = VGroup(*[
-            Connections(self.layers[i], self.layers[i+1], self.dashed)
-            for i in range(len(self.arch) - 1)
+        self.connections = VGroup(*[
+            Connections(
+                self.layers[i],
+                self.layers[i+1],
+                dashed=self.dashed,
+                color=self.highlight_color,
+            ) for i in range(len(self.arch) - 1)
         ])
-        self.add(self.layers, self.comms)
-
-    def make_comms(self, layer_idx):
-        layer = self.layers[layer_idx]
-        layer_next = self.layers[layer_idx + 1]
-        comms = VGroup()
-        for start in layer:
-            for end in layer_next:
-                comms.add(DashedLine(
-                    start=start.get_center(),
-                    end=end.get_center(),
-                    color=WHITE,
-                    z_index=500,
-                    dash_length=0.025,
-                    stroke_width=3
-                ))
-        return comms
-
-    def length(self, idx): # length between layer idx and idx+1
-        if idx < len(self.layers) - 1:
-            return Line(
-                self.layers[idx].get_center(),
-                self.layers[idx+1].get_center()
-            ).get_length()
-        else:
-            return self.length(0) # by convention last relax is as long as first one
+        self.add(self.layers, self.connections)
 
     def animation_duration(self, idx):
-        return self.standard_duration * self.length(idx) / 2
-
-    def comms_animation(self, idx, length, **kwargs):
-        group = [
-            LineAnim(
-                line,
-                color=self.highlight_color,
-                run_time=self.standard_duration * length,
-                **kwargs
-            ) for line in self.comms[idx]
-        ]
-        return AnimationGroup(*group)
+        if idx < len(self.layers) - 1:
+            l = self.connections[idx].length
+        else:
+            l = self.connections[0].length
+        return self.standard_duration * l / 2
 
     def focus_relax(self, idx):
         if idx == 0:
@@ -137,11 +145,9 @@ class Network(VGroup):
         else:
             layer = self.layers[idx]
             t1, t2 = idx - 1, idx
-        return NeuronFocusAndRelax(
-            layer,
-            color=self.highlight_color,
-            run_time_focus=self.animation_duration(t1),
-            run_time_relax=self.animation_duration(t2)
+        return layer.focus_and_relax(
+            self.animation_duration(t1),
+            self.animation_duration(t2)
         )
 
     def forward_animation(self, **kwargs):
@@ -150,7 +156,7 @@ class Network(VGroup):
         for i in range(len(self.arch) - 1):
             relaxation = AnimationGroup(
                 relax,
-                self.comms_animation(i, self.length(i), **kwargs)
+                self.connections[i].forward_animation(self.standard_duration, **kwargs)
             )
             focus, relax = self.focus_relax(i + 1)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)

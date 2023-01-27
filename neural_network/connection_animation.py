@@ -4,8 +4,8 @@ class LineAnim(Animation):
     
     def __init__(self, mobject, color=ORANGE, alpha_between=0.3, alpha_eps=1e-6, rate_func=None, **kwargs):
         super().__init__(mobject, **kwargs)
-        self.start = mobject.start
-        self.end = mobject.end
+        self.start = mobject.start_dot.get_center()
+        self.end = mobject.end_dot.get_center()
         self.color = color
         self.alpha_between = alpha_between
         self.alpha_eps = alpha_eps

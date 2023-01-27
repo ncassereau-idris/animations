@@ -6,20 +6,23 @@ class Network(VGroup):
         super().__init__(**kwargs)
         self.arch = arch
         self.radius = radius
+        self.input_color = GREY
+        self.hidden_layer_color = BLUE
         self.make()
 
     def make(self):
         self.layers = VGroup(*[
-            self.make_layer(neurons) for neurons in self.arch
+            self.make_layer(neurons, i==0) for i, neurons in enumerate(self.arch)
         ]).arrange(RIGHT)
         self.comms = VGroup(*[
             self.make_comms(i) for i in range(len(self.arch) - 1)
         ])
         self.add(self.layers, self.comms)
         
-    def make_layer(self, neurons):
+    def make_layer(self, neurons, is_input=False):
+        color = self.input_color if is_input else self.hidden_layer_color
         return VGroup(*[
-            Dot(color=GREY, radius=self.radius, z_index=1000)
+            Dot(color=color, radius=self.radius, z_index=1000)
             for _ in range(neurons)
         ]).arrange(UP)
 
@@ -34,7 +37,7 @@ class Network(VGroup):
                     end=end.get_center(),
                     color=WHITE,
                     z_index=500
-                ))
+                ).set(start_dot=start, end_dot=end))
         return comms
 
     def comms_animation(self, idx):

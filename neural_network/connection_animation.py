@@ -1,5 +1,4 @@
 from manim import *
-import numpy as np
 
 class LineAnim(Animation):
     
@@ -67,65 +66,3 @@ class LineAnim(Animation):
         self.mobject.set_opacity(1., family=False)
         scene.remove(self.all_group)
         scene.add(self.mobject)
-       
-        
-class Network(VGroup):
-    def __init__(self, arch, radius=0.1, **kwargs):
-        super().__init__(**kwargs)
-        self.arch = arch
-        self.radius = radius
-        self.make()
-
-    def make(self):
-        self.layers = VGroup(*[
-            self.make_layer(neurons) for neurons in self.arch
-        ]).arrange(RIGHT)
-        self.comms = VGroup(*[
-            self.make_comms(i) for i in range(len(self.arch) - 1)
-        ])
-        self.add(self.layers, self.comms)
-        
-    def make_layer(self, neurons):
-        return VGroup(*[Dot(color=GREY, radius=self.radius) for _ in range(neurons)]).arrange(UP)
-
-    def make_comms(self, layer_idx):
-        layer = self.layers[layer_idx]
-        layer_next = self.layers[layer_idx + 1]
-        comms = VGroup()
-        for start in layer:
-            for end in layer_next:
-                comms.add(Line(start=start.get_center(), end=end.get_center(), color=WHITE))
-        return comms
-
-    def comms_animation(self, idx):
-        group = [LineAnim(line, rate_func=smooth, run_time=1.) for line in self.comms[idx]]
-        return AnimationGroup(*group)
-    
-    def forward_animation(self):
-        L = []
-        for i in range(len(self.arch) - 1):
-            L.append(Indicate(self.layers[i]))
-            L.append(self.comms_animation(i))
-        L.append(Indicate(self.layers[-1]))
-        return Succession(*L)
-
-  
-class CURVE(Scene):
-    def construct(self):
-        net = Network([1, 2, 1]).shift(RIGHT)#.scale(2)
-        self.add(net)
-        self.wait(1)
-        self.play(net.forward_animation())
-        self.wait(1)
-        
-        
-    def tmp(self):
-        p1 = Dot([-2, 0, 0], radius=0.1, color=BLUE)
-        p2 = Dot([2, 1, 0], radius=0.1, color=RED)
-        p3 = Dot([2, -1, 0], radius=0.1, color=RED)
-        line = Line(start=p1, end=p2, color=WHITE)
-        self.add(p1, p2, p3, line)
-        self.wait(1)
-        #self.play(LineAnim(line, rate_func=smooth, run_time=3.))
-        self.play(Succession(Indicate(p1), LineAnim(line, rate_func=smooth, run_time=1.), Indicate(p2)))
-        self.wait(1)

@@ -2,10 +2,57 @@ from manim import *
 import typing
 from .connection_animation import LineAnim, NeuronFocusAndRelax
 
+
+class Layer(VGroup):
+
+    def __init__(
+        self, neurons: int, color=ORANGE, radius: float = 0.05, **kwargs
+    ) -> None:
+        super().__init__(**kwargs)
+        self.neurons = neurons
+        self.color = color
+        self.add(*[
+            Dot(color=color, radius=radius, z_index=1000)
+            for _ in range(neurons)
+        ])
+        self.arrange(UP)
+
+
+class Connections(VGroup):
+
+    def __init__(self, layer1, layer2, dashed=True, **kwargs):
+        super().__init__(**kwargs)
+        self.dashed = dashed
+        lines = [
+            self.make_line(start, end, dashed=dashed)
+            for start in layer1
+            for end in layer2
+        ]
+        self.add(*lines)
+
+    def make_line(self, start: Dot, end: Dot, dashed: bool = False):
+        if dashed:
+            return DashedLine(
+                start=start.get_center(),
+                end=end.get_center(),
+                color=WHITE,
+                z_index=500,
+                dash_length=0.025,
+                stroke_width=3
+            )
+        else:
+            return Line(
+                start=start.get_center(),
+                end=end.get_center(),
+                color=WHITE,
+                z_index=500
+            )
+
+
 class Network(VGroup):
 
     def __init__(
-        self, arch: typing.List[typing.Optional[int]],
+        self, arch: typing.List[typing.Optional[int]], dashed: bool = True,
         radius: float = 0.05, standard_duration: float = 0.375,
         **kwargs
     ):
@@ -13,6 +60,7 @@ class Network(VGroup):
         # arch contains ghost layers to artificially stretch the network
         self.arch = [i for i in arch if i is not None]
         self.radius = radius
+        self.dashed = dashed
         self.input_color = GREY
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
@@ -21,7 +69,11 @@ class Network(VGroup):
 
     def make(self, ghost_arch):
         self.layers = [
-            self.make_layer(neurons, i==0)
+            Layer(
+                neurons,
+                self.input_color if i == 0 else self.hidden_layer_color,
+                self.radius
+            )
             if neurons is not None else Dot()
             for i, neurons in enumerate(ghost_arch)
         ]
@@ -34,16 +86,10 @@ class Network(VGroup):
         ])
 
         self.comms = VGroup(*[
-            self.make_comms(i) for i in range(len(self.arch) - 1)
+            Connections(self.layers[i], self.layers[i+1], self.dashed)
+            for i in range(len(self.arch) - 1)
         ])
         self.add(self.layers, self.comms)
-        
-    def make_layer(self, neurons, is_input=False):
-        color = self.input_color if is_input else self.hidden_layer_color
-        return VGroup(*[
-            Dot(color=color, radius=self.radius, z_index=1000)
-            for _ in range(neurons)
-        ]).arrange(UP)
 
     def make_comms(self, layer_idx):
         layer = self.layers[layer_idx]

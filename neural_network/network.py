@@ -18,7 +18,10 @@ class Network(VGroup):
         self.add(self.layers, self.comms)
         
     def make_layer(self, neurons):
-        return VGroup(*[Dot(color=GREY, radius=self.radius) for _ in range(neurons)]).arrange(UP)
+        return VGroup(*[
+            Dot(color=GREY, radius=self.radius, z_index=1000)#.set(z_index=1000)
+            for _ in range(neurons)
+        ]).arrange(UP)
 
     def make_comms(self, layer_idx):
         layer = self.layers[layer_idx]
@@ -26,11 +29,18 @@ class Network(VGroup):
         comms = VGroup()
         for start in layer:
             for end in layer_next:
-                comms.add(Line(start=start.get_center(), end=end.get_center(), color=WHITE))
+                comms.add(Line(
+                    start=start.get_center(),
+                    end=end.get_center(),
+                    color=WHITE,
+                ))
         return comms
 
     def comms_animation(self, idx):
-        group = [LineAnim(line, rate_func=smooth, run_time=1.) for line in self.comms[idx]]
+        group = [
+            LineAnim(line, rate_func=smooth, run_time=1.)
+            for line in self.comms[idx]
+        ]
         return AnimationGroup(*group)
     
     def forward_animation(self):

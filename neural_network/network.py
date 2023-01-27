@@ -19,7 +19,7 @@ class Network(VGroup):
         
     def make_layer(self, neurons):
         return VGroup(*[
-            Dot(color=GREY, radius=self.radius, z_index=1000)#.set(z_index=1000)
+            Dot(color=GREY, radius=self.radius, z_index=1000)
             for _ in range(neurons)
         ]).arrange(UP)
 
@@ -33,6 +33,7 @@ class Network(VGroup):
                     start=start.get_center(),
                     end=end.get_center(),
                     color=WHITE,
+                    z_index=500
                 ))
         return comms
 

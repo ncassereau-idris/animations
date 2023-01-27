@@ -113,3 +113,15 @@ class DashedLineAnim(Animation):
             stroke = self.stroke if i == highlighted_index else self.base_stroke
             self.mobject.submobjects[i].set_color(color)
             self.mobject.submobjects[i].set(stroke_width=stroke)
+
+
+def NeuronFocusAndRelax(
+    mobject: Dot, color=ORANGE,
+    run_time_focus: int = 0.5, run_time_relax: int = 0.5,
+    **kwargs
+) -> None:
+    mobject.save_state()
+    return (
+        mobject.animate(run_time=run_time_focus, **kwargs).set_color(color=color),
+        Restore(mobject, run_time=run_time_relax)
+    )

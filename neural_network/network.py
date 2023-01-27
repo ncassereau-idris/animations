@@ -1,20 +1,46 @@
 from manim import *
-from .connection_animation import LineAnim
+import typing
+from .connection_animation import LineAnim, NeuronFocusAndRelax
 
 class Network(VGroup):
-    def __init__(self, arch, radius=0.05, **kwargs):
+    def __init__(self, arch: typing.List[typing.Optional[int]], radius=0.05, **kwargs):
         super().__init__(**kwargs)
-        self.arch = arch
+        self.ghost_arch = arch # with ghost node to artificially stretch the network
+        self.arch = [i for i in arch if i is not None]
+        self.n_ghosts = self.compute_number_ghosts()
         self.radius = radius
         self.input_color = GREY
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
         self.make()
 
+    def compute_number_ghosts(self):
+        # compute the number of ghosts between each layer so that the runtime
+        # can be proportional with respect to the distance between layers
+        n_ghosts = []
+        for i in range(len(self.ghost_arch) - 1):
+            if self.ghost_arch[i] is not None:
+                n_ghosts.append(0)
+            else:
+                n_ghosts[-1] += 1
+        n_ghosts.append(0)
+        return n_ghosts
+
+
     def make(self):
+        self.layers = [
+            self.make_layer(neurons, i==0)
+            if neurons is not None else Dot()
+            for i, neurons in enumerate(self.ghost_arch)
+        ]
+        VGroup(*self.layers).arrange(RIGHT)
+
         self.layers = VGroup(*[
-            self.make_layer(neurons, i==0) for i, neurons in enumerate(self.arch)
-        ]).arrange(RIGHT)
+            self.layers[i]
+            for i in range(len(self.ghost_arch))
+            if self.ghost_arch[i] is not None
+        ])
+
         self.comms = VGroup(*[
             self.make_comms(i) for i in range(len(self.arch) - 1)
         ])
@@ -45,26 +71,33 @@ class Network(VGroup):
 
     def comms_animation(self, idx, **kwargs):
         group = [
-            LineAnim(line, color=self.highlight_color, run_time=.5, **kwargs)
-            for line in self.comms[idx]
+            LineAnim(
+                line,
+                color=self.highlight_color,
+                run_time=.375 * (1 + self.n_ghosts[idx]),
+                **kwargs
+            ) for line in self.comms[idx]
         ]
         return AnimationGroup(*group)
     
     def forward_animation(self, **kwargs):
-        L = []
-
-        def indicate(layer, **kwargs):
-            return Indicate(
-                layer,
-                scale_factor=1,
-                color=self.highlight_color,
-                rate_func=there_and_back_with_pause,
-                run_time=0.5,
-                **kwargs
-            )
+        focus, relax = NeuronFocusAndRelax(
+            self.layers[0],
+            color=self.highlight_color,
+            run_time_focus=0.375,
+            run_time_relax=0.375 * (1 + self.n_ghosts[0]) / 2,
+        )
+        anim = focus
 
         for i in range(len(self.arch) - 1):
-            L.append(indicate(self.layers[i]))
-            L.append(self.comms_animation(i, **kwargs))
-        L.append(indicate(self.layers[-1]))
-        return LaggedStart(*L, lag_ratio=0.5)
+            relaxation = AnimationGroup(relax, self.comms_animation(i, **kwargs))
+            focus, relax = NeuronFocusAndRelax(
+                self.layers[i + 1],
+                color=self.highlight_color,
+                run_time_focus=0.375 * (1 + self.n_ghosts[i]) / 2,
+                run_time_relax=0.375 * (1 + self.n_ghosts[i + 1]) / 2,
+            )
+            next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)
+            anim = Succession(anim, next_focus)
+        anim = Succession(anim, relax)
+        return anim

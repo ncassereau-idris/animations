@@ -1,17 +1,31 @@
 from manim import *
+import typing
+import numpy as np
 
-class LineAnim(Animation):
+
+def LineAnim(mobject: Line, *args, **kwargs) -> Animation:
+    if isinstance(mobject, DashedLine):
+        return DashedLineAnim(mobject, *args, **kwargs)
+    elif isinstance(mobject, Line):
+        return FullLineAnim(mobject, *args, **kwargs)
+
+
+class FullLineAnim(Animation):
     
-    def __init__(self, mobject, color=ORANGE, alpha_between=0.3, alpha_eps=1e-6, rate_func=None, **kwargs):
+    def __init__(
+        self, mobject: Line, color=ORANGE,
+        alpha_between: float = 0.3, alpha_eps:float = 1e-6,
+        **kwargs
+    ) -> None:
         super().__init__(mobject, **kwargs)
-        self.start = mobject.start_dot.get_center()
-        self.end = mobject.end_dot.get_center()
+        self.start = mobject.get_start()
+        self.end = mobject.get_end()
         self.color = color
         self.alpha_between = alpha_between
         self.alpha_eps = alpha_eps
-        self.rate_func = rate_func
+        self.rate_func = smooth
         
-    def begin(self):
+    def begin(self) -> None:
         self.mobject.set_opacity(0, family=False)
         self.l1 = Line(self.start, self.end, color=self.mobject.color)
         self.l2 = Line(self.start, self.end, color=self.color)
@@ -23,18 +37,21 @@ class LineAnim(Animation):
         self.mobject.add(self.all_group)
         super().begin()
 
-    def get_coord(self, alpha):
+    def get_coord(self, alpha: float) -> np.ndarray:
         return alpha * self.end + (1 - alpha) * self.start
 
-    def get_alphas(self, alpha):
+    def get_alphas(self, alpha: float) -> typing.Tuple[float]:
         alpha1 = alpha * (1 + self.alpha_between)
         alpha2 = alpha1 - self.alpha_between
         return alpha1, alpha2
 
-    def get_points_pair(self, alpha):
-        return self.get_coord(alpha - self.alpha_eps), self.get_coord(alpha + self.alpha_eps)
+    def get_points_pair(self, alpha: float) -> typing.Tuple[np.ndarray]:
+        return (
+            self.get_coord(alpha - self.alpha_eps),
+            self.get_coord(alpha + self.alpha_eps)
+        )
 
-    def interpolate_mobject(self, alpha):
+    def interpolate_mobject(self, alpha: float) -> None:
         if self.rate_func is not None:
             alpha = self.rate_func(alpha)
         alpha1, alpha2 = self.get_alphas(alpha)
@@ -60,9 +77,39 @@ class LineAnim(Animation):
 
         self.mobject.set_opacity(0, family=False)
         
-    def clean_up_from_scene(self, scene):
+    def clean_up_from_scene(self, scene: Scene) -> None:
         super().clean_up_from_scene(scene)
         self.all_group.set_opacity(0)
         self.mobject.set_opacity(1., family=False)
         scene.remove(self.all_group)
         scene.add(self.mobject)
+
+
+class DashedLineAnim(Animation):
+
+    def __init__(self, mobject: DashedLine, color=ORANGE, **kwargs):
+        super().__init__(mobject, **kwargs)
+        self.color = color
+        self.mobject = mobject
+        self.base_color = mobject.color
+        self.num_dashes = len(mobject.submobjects)
+        self.step = 1 / self.num_dashes
+        self.rate_func = linear
+        self.base_stroke = mobject.stroke_width
+        self.stroke = 2 * self.base_stroke
+
+    def begin(self) -> None:
+        super().begin()
+
+    def clean_up_from_scene(self, scene: Scene) -> None:
+        self.mobject.set_color(self.base_color)
+        super().clean_up_from_scene(scene)
+
+    def interpolate_mobject(self, alpha: float) -> None:
+        alpha = self.rate_func(alpha)
+        highlighted_index = int(alpha // self.step)
+        for i in range(self.num_dashes):
+            color = self.color if i == highlighted_index else self.base_color
+            stroke = self.stroke if i == highlighted_index else self.base_stroke
+            self.mobject.submobjects[i].set_color(color)
+            self.mobject.submobjects[i].set(stroke_width=stroke)

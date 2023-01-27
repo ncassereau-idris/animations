@@ -2,12 +2,13 @@ from manim import *
 from .connection_animation import LineAnim
 
 class Network(VGroup):
-    def __init__(self, arch, radius=0.1, **kwargs):
+    def __init__(self, arch, radius=0.05, **kwargs):
         super().__init__(**kwargs)
         self.arch = arch
         self.radius = radius
         self.input_color = GREY
         self.hidden_layer_color = BLUE
+        self.highlight_color = YELLOW_E
         self.make()
 
     def make(self):
@@ -32,25 +33,38 @@ class Network(VGroup):
         comms = VGroup()
         for start in layer:
             for end in layer_next:
-                comms.add(Line(
+                comms.add(DashedLine(
                     start=start.get_center(),
                     end=end.get_center(),
                     color=WHITE,
-                    z_index=500
-                ).set(start_dot=start, end_dot=end))
+                    z_index=500,
+                    dash_length=0.025,
+                    stroke_width=3
+                ))
         return comms
 
-    def comms_animation(self, idx):
+    def comms_animation(self, idx, **kwargs):
         group = [
-            LineAnim(line, rate_func=smooth, run_time=1.)
+            LineAnim(line, color=self.highlight_color, run_time=.5, **kwargs)
             for line in self.comms[idx]
         ]
         return AnimationGroup(*group)
     
-    def forward_animation(self):
+    def forward_animation(self, **kwargs):
         L = []
+
+        def indicate(layer, **kwargs):
+            return Indicate(
+                layer,
+                scale_factor=1,
+                color=self.highlight_color,
+                rate_func=there_and_back_with_pause,
+                run_time=0.5,
+                **kwargs
+            )
+
         for i in range(len(self.arch) - 1):
-            L.append(Indicate(self.layers[i]))
-            L.append(self.comms_animation(i))
-        L.append(Indicate(self.layers[-1]))
-        return Succession(*L)
+            L.append(indicate(self.layers[i]))
+            L.append(self.comms_animation(i, **kwargs))
+        L.append(indicate(self.layers[-1]))
+        return LaggedStart(*L, lag_ratio=0.5)

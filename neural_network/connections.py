@@ -2,6 +2,63 @@ from manim import *
 import typing
 import numpy as np
 
+class Connections(VGroup):
+
+    def __init__(
+        self, layer1, layer2, color=ORANGE, dashed: bool = True, **kwargs
+    ) -> None:
+        super().__init__(**kwargs)
+        self.dashed = dashed
+        self.layer1 = layer1
+        self.layer2 = layer2
+        self.color = color
+        lines = [
+            self.make_line(start, end, dashed=dashed)
+            for start in layer1.dots
+            for end in layer2.dots
+        ]
+        self.add(*lines)
+
+    def make_line(self, start: Dot, end: Dot, dashed: bool = False):
+        if dashed:
+            return DashedLine(
+                start=start.get_center(),
+                end=end.get_center(),
+                color=WHITE,
+                z_index=500,
+                dash_length=0.025,
+                stroke_width=3
+            )
+        else:
+            return Line(
+                start=start.get_center(),
+                end=end.get_center(),
+                color=WHITE,
+                z_index=500
+            )
+
+    @property
+    def length(self):
+        return Line(
+            self.layer1.get_center(),
+            self.layer2.get_center()
+        ).get_length()
+
+    def forward_animation(self, duration, **kwargs):
+        length = self.length
+        group = [
+            LineAnim(
+                line,
+                color=self.color,
+                run_time=duration * length,
+                **kwargs
+            ) for line in self
+        ]
+        return AnimationGroup(*group)
+
+    def backward_animation(self, duration, **kwargs):
+        return self.forward_animation(duration, reverse=True, **kwargs)
+
 
 def LineAnim(mobject: Line, *args, **kwargs) -> Animation:
     if isinstance(mobject, DashedLine):
@@ -121,16 +178,3 @@ class DashedLineAnim(Animation):
             stroke = self.stroke if i == highlighted_index else self.base_stroke
             self.mobject.submobjects[i].set_color(color)
             self.mobject.submobjects[i].set(stroke_width=stroke)
-
-
-def NeuronFocusAndRelax(
-    mobject: Dot, color=ORANGE,
-    run_time_focus: int = 0.5, run_time_relax: int = 0.5,
-    **kwargs
-) -> None:
-    mobject = mobject.dots
-    mobject.save_state()
-    return (
-        mobject.animate(run_time=run_time_focus, **kwargs).set_color(color=color),
-        Restore(mobject, run_time=run_time_relax)
-    )

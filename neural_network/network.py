@@ -17,7 +17,7 @@ class Layer(VGroup):
             Dot(color=color, radius=radius, z_index=1000)
             for _ in range(neurons)
         ])
-        self.arrange(UP)
+        self.arrange(.5 * UP)
 
     def focus_and_relax(self, run_time_focus, run_time_relax):
         return NeuronFocusAndRelax(
@@ -103,9 +103,10 @@ class Network(VGroup):
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
         self.standard_duration = standard_duration
-        self.make(arch)
+        self.make_network(arch)
+        self.make_subobjects()
 
-    def make(self, ghost_arch):
+    def make_network(self, ghost_arch):
         self.layers = [
             Layer(
                 neurons,
@@ -134,6 +135,14 @@ class Network(VGroup):
         ])
         self.add(self.layers, self.connections)
 
+    def make_subobjects(self):
+        self.input = Square(
+            color=RED, side_length=0.5, fill_opacity=0.5
+        )
+        self.output = Square(
+            color=GREEN, side_length=0.5, fill_opacity=0.5
+        )
+
     def animation_duration(self, idx):
         if idx < len(self.layers) - 1:
             l = self.connections[idx].length
@@ -156,17 +165,24 @@ class Network(VGroup):
         )
 
     def forward_animation(self, **kwargs):
+        self.input.next_to(self.layers[0], LEFT)
+        self.output.next_to(self.layers[-1], RIGHT)
         focus, relax = self.focus_relax(0, reverse_sweep=False)
-        anim = focus
+        anim = Succession(
+            FadeIn(self.input, shift=0.2 * RIGHT),
+            focus,
+        )
         for i in range(len(self.arch) - 1):
             relaxation = AnimationGroup(
                 relax,
                 self.connections[i].forward_animation(self.standard_duration, **kwargs)
             )
             focus, relax = self.focus_relax(i + 1, reverse_sweep=False)
-            next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)
+            next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             anim = Succession(anim, next_focus)
-        return Succession(anim, relax)
+        return Succession(anim, AnimationGroup(
+            relax, FadeOut(self.input), FadeIn(self.output, shift=0.2 * RIGHT)
+        ))
 
     def backward_animation(self, **kwargs):
         focus, relax = self.focus_relax(-1, reverse_sweep=True)
@@ -179,5 +195,5 @@ class Network(VGroup):
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             anim = Succession(anim, next_focus)
-        return Succession(anim, relax)
+        return Succession(anim, AnimationGroup(relax, FadeOut(self.output)))
     

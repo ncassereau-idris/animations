@@ -100,7 +100,7 @@ class DashedLineAnim(Animation):
         self.step = 1 / self.num_dashes
         self.rate_func = linear
         self.base_stroke = mobject.stroke_width
-        self.stroke = 2 * self.base_stroke
+        self.stroke = 4 * self.base_stroke
         self.reversed = reverse
 
     def begin(self) -> None:

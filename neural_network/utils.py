@@ -50,6 +50,6 @@ def fadeInAlphaFactory(mob, shift=None):
             opacity=alpha
         )
         if shift is not None:
-            mob.move_to(base_position - 2 * shift * (1 - alpha))
+            mob.move_to(base_position - shift * (1 - alpha))
 
     return updater

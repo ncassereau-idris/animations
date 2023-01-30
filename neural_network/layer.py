@@ -32,15 +32,16 @@ class Layer(VMobject):
         self.make_memory_objects()
         self.add(self.dots)
         self.add(self.activations, self.gradients, self.optimizer)
-        self.hide()
+        self.hide(self.activations, self.gradients)
+        self.maybe_hide_all()
 
-    def hide(self):
-        for object_ in [self.activations, self.gradients, self.optimizer]:
+    def hide(self, *args):
+        for object_ in args:
             object_.hide()
 
-    def maybe_hide(self):
+    def maybe_hide_all(self):
         if self.is_input:
-            self.hide()
+            self.hide(self.activations, self.gradients, self.optimizer)
 
     def make_square(self, color):
         return MemorySquare(

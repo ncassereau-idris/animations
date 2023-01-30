@@ -1,4 +1,4 @@
-from .connection_animation import LineAnim
+from .network_animation import LineAnim
 from .network import Network
 from .scene import SCENE
 

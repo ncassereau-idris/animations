@@ -128,6 +128,7 @@ def NeuronFocusAndRelax(
     run_time_focus: int = 0.5, run_time_relax: int = 0.5,
     **kwargs
 ) -> None:
+    mobject = mobject.dots
     mobject.save_state()
     return (
         mobject.animate(run_time=run_time_focus, **kwargs).set_color(color=color),

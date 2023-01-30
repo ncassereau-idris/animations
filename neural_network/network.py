@@ -1,23 +1,50 @@
 from manim import *
 import typing
-from .connection_animation import LineAnim, NeuronFocusAndRelax
+from .network_animation import LineAnim, NeuronFocusAndRelax
 
 
-class Layer(VGroup):
+class Layer(VMobject):
 
     def __init__(
-        self, neurons: int, color=GRAY, radius: float = 0.05,
-        highlight_color=ORANGE, **kwargs
+        self, neurons: int, is_input: bool = False,
+        input_color=GRAY, hidden_color=YELLOW_E, radius: float = 0.05,
+        highlight_color=ORANGE, submobjects_size: float = 0.025, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.neurons = neurons
-        self.color = color
+        self.is_input = is_input
+        self.color = input_color if is_input else hidden_color
         self.highlight_color = highlight_color
-        self.add(*[
-            Dot(color=color, radius=radius, z_index=1000)
+        self.submobjects_size = submobjects_size
+        self.dots = VGroup(*[
+            Dot(color=self.color, radius=radius, z_index=1000)
             for _ in range(neurons)
         ])
-        self.arrange(.5 * UP)
+        self.dots.arrange(.5 * UP)
+        self.make_memory_objects()
+        self.add(self.dots)
+        if not is_input:
+            self.add(self.memory_objects)
+
+    def make_square(self, color):
+        return Square(
+            color=color,
+            side_length=self.submobjects_size,
+            fill_opacity=0.5,
+            stroke_width=3.5
+        )
+
+    def make_memory_objects(self):
+        self.activations = self.make_square(BLUE)
+        self.gradients = self.make_square(ORANGE)
+        self.optimizer = self.make_square(GREEN)
+        self.memory_objects = VGroup(
+            self.activations,
+            self.gradients,
+            self.optimizer
+        )
+        self.memory_objects.arrange(RIGHT, buff=0.01)
+        self.memory_objects.next_to(self.dots.get_bottom(), .2 * DOWN)
 
     def focus_and_relax(self, run_time_focus, run_time_relax):
         return NeuronFocusAndRelax(
@@ -41,8 +68,8 @@ class Connections(VGroup):
         self.color = color
         lines = [
             self.make_line(start, end, dashed=dashed)
-            for start in layer1
-            for end in layer2
+            for start in layer1.dots
+            for end in layer2.dots
         ]
         self.add(*lines)
 
@@ -110,7 +137,9 @@ class Network(VGroup):
         self.layers = [
             Layer(
                 neurons,
-                color=self.input_color if i == 0 else self.hidden_layer_color,
+                is_input=(i == 0),
+                input_color=self.input_color,
+                hidden_color=self.hidden_layer_color,
                 radius=self.radius,
                 highlight_color=self.highlight_color
             )
@@ -165,8 +194,8 @@ class Network(VGroup):
         )
 
     def forward_animation(self, **kwargs):
-        self.input.next_to(self.layers[0], LEFT)
-        self.output.next_to(self.layers[-1], RIGHT)
+        self.input.next_to(self.layers[0].dots, LEFT)
+        self.output.next_to(self.layers[-1].dots, RIGHT)
         focus, relax = self.focus_relax(0, reverse_sweep=False)
         anim = Succession(
             FadeIn(self.input, shift=0.2 * RIGHT),

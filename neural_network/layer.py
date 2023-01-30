@@ -16,7 +16,8 @@ class Layer(VMobject):
     def __init__(
         self, neurons: int, is_input: bool = False,
         input_color=GRAY, hidden_color=YELLOW_E, radius: float = 0.05,
-        highlight_color=ORANGE, submobjects_size: float = 0.025, **kwargs
+        highlight_color=ORANGE, submobjects_size: float = 0.025,
+        square_layer: bool = False, **kwargs
     ) -> None:
         super().__init__(**kwargs)
         self.neurons = neurons
@@ -26,7 +27,11 @@ class Layer(VMobject):
         self.submobjects_size = submobjects_size
         self.dots = VGroup(*[
             Dot(color=self.color, radius=radius, z_index=1000)
-            for _ in range(neurons)
+            if not square_layer else
+            Square(
+                stroke_color=self.color, side_length=radius,
+                z_index=1000, fill_opacity=1, fill_color=BLUE_B if not is_input else GREY_B
+            ) for _ in range(neurons)
         ])
         self.dots.arrange(.5 * UP)
         self.make_memory_objects()
@@ -55,7 +60,7 @@ class Layer(VMobject):
         bottom = self.dots.get_bottom()
         y_shift = 0.2 * DOWN
         x_shift = 0.05 * RIGHT
-        self.activations = self.make_square(BLUE).next_to(bottom, y_shift).shift(-x_shift)
+        self.activations = self.make_square(RED).next_to(bottom, y_shift).shift(-x_shift)
         self.gradients = self.make_square(ORANGE).next_to(bottom, y_shift)
         self.optimizer = self.make_square(GREEN).next_to(bottom, y_shift).shift(x_shift)
 

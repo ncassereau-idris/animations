@@ -1,7 +1,7 @@
 from manim import *
 import typing
 
-from neural_network.utils import StartUpdater, fadeInAlphaFactory
+from neural_network.utils import StartUpdater, fadeInAlphaFactory, fadeOutAlphaFactory
 from .connections import Connections
 from .layer import Layer
 
@@ -11,6 +11,7 @@ class Network(VGroup):
     def __init__(
         self, arch: typing.List[typing.Optional[int]], dashed: bool = True,
         radius: float = 0.05, standard_duration: float = 0.375,
+        square_layer: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -22,6 +23,7 @@ class Network(VGroup):
         self.hidden_layer_color = BLUE
         self.highlight_color = YELLOW_E
         self.standard_duration = standard_duration
+        self.square_layer = square_layer
         self.make_network(arch)
         self.make_subobjects()
 
@@ -33,7 +35,8 @@ class Network(VGroup):
                 input_color=self.input_color,
                 hidden_color=self.hidden_layer_color,
                 radius=self.radius,
-                highlight_color=self.highlight_color
+                highlight_color=self.highlight_color,
+                square_layer=self.square_layer
             )
             if neurons is not None else Dot()
             for i, neurons in enumerate(ghost_arch)
@@ -57,11 +60,17 @@ class Network(VGroup):
         self.add(self.layers, self.connections)
 
     def make_subobjects(self):
-        self.input = Square(
-            color=RED, side_length=0.5, fill_opacity=0.5
+        self.input = MarkupText(
+            text="<i>x</i>"
         )
-        self.output = Square(
-            color=GREEN, side_length=0.5, fill_opacity=0.5
+        self.output = MarkupText(
+            text="<i>ŷ</i>"
+        )
+        self.label = MarkupText(
+            text="<i>y</i>"
+        )
+        self.loss = MarkupText(
+            text="<i>ℒ</i>"
         )
 
     def animation_duration(self, idx):
@@ -111,8 +120,21 @@ class Network(VGroup):
         ))
 
     def backward_animation(self, **kwargs):
+        # Make the loss appear
+        self.label.move_to(self.output).align_to(self.output, DOWN).shift(.5*RIGHT)
+        self.loss.move_to(self.output)
+        loss_anim = Succession(
+            FadeIn(self.label, shift=.2*LEFT),
+            LaggedStart(
+                AnimationGroup(FadeOut(self.output, shift=.2*UP), FadeOut(self.label, shift=.2*UP)),
+                FadeIn(self.loss, shift=.2*UP),
+                lag_ratio=.4
+            )
+        )
+
+        # Start backpropagation
         focus, relax = self.focus_relax(-1, reverse_sweep=True)
-        anim = focus
+        back_anim = focus
         for i in range(len(self.arch) - 2, -1, -1):
             relaxation = AnimationGroup(
                 relax,
@@ -125,6 +147,7 @@ class Network(VGroup):
             )
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
-            anim = Succession(anim, next_focus)
-        return Succession(anim, AnimationGroup(relax, FadeOut(self.output)))
+            back_anim = Succession(back_anim, next_focus)
+        back_anim = Succession(back_anim, relax)
+        return Succession(loss_anim, back_anim)
     

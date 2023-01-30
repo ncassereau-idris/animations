@@ -53,3 +53,8 @@ def fadeInAlphaFactory(mob, shift=None):
             mob.move_to(base_position - shift * (1 - alpha))
 
     return updater
+
+
+def fadeOutAlphaFactory(mob, shift=None):
+    f = fadeInAlphaFactory(mob, shift=shift)
+    return lambda mob, alpha: f(mob, 1 - alpha)

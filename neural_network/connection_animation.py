@@ -15,6 +15,7 @@ class FullLineAnim(Animation):
     def __init__(
         self, mobject: Line, color=ORANGE,
         alpha_between: float = 0.3, alpha_eps:float = 1e-6,
+        reverse: bool = False,
         **kwargs
     ) -> None:
         super().__init__(mobject, **kwargs)
@@ -24,6 +25,7 @@ class FullLineAnim(Animation):
         self.alpha_between = alpha_between
         self.alpha_eps = alpha_eps
         self.rate_func = smooth
+        self.reversed = reverse
         
     def begin(self) -> None:
         self.mobject.set_opacity(0, family=False)
@@ -52,6 +54,8 @@ class FullLineAnim(Animation):
         )
 
     def interpolate_mobject(self, alpha: float) -> None:
+        if self.reversed:
+            alpha = 1 - alpha
         if self.rate_func is not None:
             alpha = self.rate_func(alpha)
         alpha1, alpha2 = self.get_alphas(alpha)
@@ -87,7 +91,7 @@ class FullLineAnim(Animation):
 
 class DashedLineAnim(Animation):
 
-    def __init__(self, mobject: DashedLine, color=ORANGE, **kwargs):
+    def __init__(self, mobject: DashedLine, color=ORANGE, reverse: bool = False, **kwargs):
         super().__init__(mobject, **kwargs)
         self.color = color
         self.mobject = mobject
@@ -97,6 +101,7 @@ class DashedLineAnim(Animation):
         self.rate_func = linear
         self.base_stroke = mobject.stroke_width
         self.stroke = 2 * self.base_stroke
+        self.reversed = reverse
 
     def begin(self) -> None:
         super().begin()
@@ -106,7 +111,10 @@ class DashedLineAnim(Animation):
         super().clean_up_from_scene(scene)
 
     def interpolate_mobject(self, alpha: float) -> None:
-        alpha = self.rate_func(alpha)
+        if self.reversed:
+            alpha = 1 - alpha
+        if self.rate_func is not None:
+            alpha = self.rate_func(alpha)
         highlighted_index = int(alpha // self.step)
         for i in range(self.num_dashes):
             color = self.color if i == highlighted_index else self.base_color

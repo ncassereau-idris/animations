@@ -83,6 +83,9 @@ class Connections(VGroup):
         ]
         return AnimationGroup(*group)
 
+    def backward_animation(self, duration, **kwargs):
+        return self.forward_animation(duration, reverse=True, **kwargs)
+
 
 class Network(VGroup):
 

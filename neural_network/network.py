@@ -142,7 +142,7 @@ class Network(VGroup):
         return self.standard_duration * l / 2
 
     def focus_relax(self, idx, reverse_sweep: bool = False):
-        if idx == 0 or reverse_sweep and idx == -1:
+        if (not reverse_sweep and idx == 0) or (reverse_sweep and idx == -1):
             layer = self.layers[idx]
             t1, t2 = 0, 0
         else:

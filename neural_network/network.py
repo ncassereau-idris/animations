@@ -141,27 +141,43 @@ class Network(VGroup):
             l = self.connections[0].length
         return self.standard_duration * l / 2
 
-    def focus_relax(self, idx):
-        if idx == 0:
-            layer = self.layers[0]
+    def focus_relax(self, idx, reverse_sweep: bool = False):
+        if idx == 0 or reverse_sweep and idx == -1:
+            layer = self.layers[idx]
             t1, t2 = 0, 0
         else:
             layer = self.layers[idx]
             t1, t2 = idx - 1, idx
+            if reverse_sweep: # switch focus and relax time
+                t1, t2 = t2, t1
         return layer.focus_and_relax(
             self.animation_duration(t1),
             self.animation_duration(t2)
         )
 
     def forward_animation(self, **kwargs):
-        focus, relax = self.focus_relax(0)
+        focus, relax = self.focus_relax(0, reverse_sweep=False)
         anim = focus
         for i in range(len(self.arch) - 1):
             relaxation = AnimationGroup(
                 relax,
                 self.connections[i].forward_animation(self.standard_duration, **kwargs)
             )
-            focus, relax = self.focus_relax(i + 1)
+            focus, relax = self.focus_relax(i + 1, reverse_sweep=False)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.4)
             anim = Succession(anim, next_focus)
         return Succession(anim, relax)
+
+    def backward_animation(self, **kwargs):
+        focus, relax = self.focus_relax(-1, reverse_sweep=True)
+        anim = focus
+        for i in range(len(self.arch) - 2, -1, -1):
+            relaxation = AnimationGroup(
+                relax,
+                self.connections[i].backward_animation(self.standard_duration, **kwargs)
+            )
+            focus, relax = self.focus_relax(i, reverse_sweep=True)
+            next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
+            anim = Succession(anim, next_focus)
+        return Succession(anim, relax)
+    

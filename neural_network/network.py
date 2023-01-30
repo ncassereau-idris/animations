@@ -1,5 +1,7 @@
 from manim import *
 import typing
+
+from neural_network.utils import StartUpdater, fadeInAlphaFactory
 from .connections import Connections
 from .layer import Layer
 
@@ -94,7 +96,12 @@ class Network(VGroup):
         for i in range(len(self.arch) - 1):
             relaxation = AnimationGroup(
                 relax,
-                self.connections[i].forward_animation(self.standard_duration, **kwargs)
+                self.connections[i].forward_animation(self.standard_duration, **kwargs),
+                StartUpdater(
+                    self.layers[i + 1].activations,
+                    fadeInAlphaFactory(self.layers[i + 1].activations, shift=0.2*DOWN),
+                    run_time=0.2
+                )
             )
             focus, relax = self.focus_relax(i + 1, reverse_sweep=False)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
@@ -109,7 +116,12 @@ class Network(VGroup):
         for i in range(len(self.arch) - 2, -1, -1):
             relaxation = AnimationGroup(
                 relax,
-                self.connections[i].backward_animation(self.standard_duration, **kwargs)
+                self.connections[i].backward_animation(self.standard_duration, **kwargs),
+                StartUpdater(
+                    self.layers[i + 1].gradients,
+                    fadeInAlphaFactory(self.layers[i + 1].gradients, shift=0.2*DOWN),
+                    run_time=0.2
+                )
             )
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)

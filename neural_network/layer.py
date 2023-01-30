@@ -1,6 +1,16 @@
 from manim import *
 
 
+class MemorySquare(Square):
+
+    def __init__(self, fill_opacity, **kwargs):
+        super().__init__(fill_opacity=fill_opacity, **kwargs)
+        self.base_fill_opacity = fill_opacity
+
+    def hide(self):
+        self.set_opacity(0)
+
+
 class Layer(VMobject):
 
     def __init__(
@@ -26,14 +36,14 @@ class Layer(VMobject):
 
     def hide(self):
         for object_ in [self.activations, self.gradients, self.optimizer]:
-            object_.set_opacity(0)
+            object_.hide()
 
     def maybe_hide(self):
         if self.is_input:
             self.hide()
 
     def make_square(self, color):
-        return Square(
+        return MemorySquare(
             color=color,
             side_length=self.submobjects_size,
             fill_opacity=0.5,

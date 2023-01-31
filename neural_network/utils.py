@@ -1,13 +1,15 @@
 from manim import *
 
+dummy_object = Square(side_length=0)
 
 class StartUpdater(Animation):
 
     def __init__(self, mobject, interpolation, run_time=1, **kwargs):
-        super().__init__(mobject, run_time=0, **kwargs)
-        self.mobject = mobject
+        super().__init__(dummy_object, run_time=0, **kwargs)
+        self.mobject_ = mobject
         self.interpolation = interpolation
         self.duration = run_time
+        self.started = False
 
     def make_updater(self):
         dt_sum = 0
@@ -25,10 +27,11 @@ class StartUpdater(Animation):
 
     def begin(self) -> None:
         super().begin()
-        self.mobject.add_updater(self.make_updater())
-
+        
     def interpolate_mobject(self, alpha: float) -> None:
-        pass
+        if not self.started:
+            self.mobject_.add_updater(self.make_updater())
+            self.started = True
 
     def clean_up_from_scene(self, scene: Scene) -> None:
         super().clean_up_from_scene(scene)
@@ -41,14 +44,17 @@ def fadeInAlphaFactory(mob, shift=None):
 
     def updater(mob, alpha):
         alpha = np.clip(alpha, 0, 1)
-        mob.set_fill(
-            color=fill_color,
-            opacity=alpha * mob.base_fill_opacity
-        )
-        mob.set_stroke(
-            color=stroke_color,
-            opacity=alpha
-        )
+        if hasattr(mob, "base_fill_opacity"):
+            mob.set_fill(
+                color=fill_color,
+                opacity=alpha * mob.base_fill_opacity
+            )
+            mob.set_stroke(
+                color=stroke_color,
+                opacity=alpha
+            )
+        else:
+            mob.set_opacity(alpha)
         if shift is not None:
             mob.move_to(base_position - shift * (1 - alpha))
 
@@ -56,5 +62,5 @@ def fadeInAlphaFactory(mob, shift=None):
 
 
 def fadeOutAlphaFactory(mob, shift=None):
-    f = fadeInAlphaFactory(mob, shift=shift)
+    f = fadeInAlphaFactory(mob, shift=-shift)
     return lambda mob, alpha: f(mob, 1 - alpha)

@@ -149,5 +149,7 @@ class Network(VGroup):
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             back_anim = Succession(back_anim, next_focus)
         back_anim = Succession(back_anim, relax)
-        return Succession(loss_anim, back_anim)
+        return Succession(loss_anim, back_anim, StartUpdater(
+            self.loss, fadeOutAlphaFactory(self.loss, shift=0.2*UP), run_time=0.2
+        ))
     

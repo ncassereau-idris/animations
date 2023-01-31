@@ -12,4 +12,5 @@ class SCENE(Scene):
         self.play(net.forward_animation())
         self.wait(1)
         self.play(net.backward_animation())
+        # self.play(FadeOut(net.loss, shift=0.2*UP))
         self.wait(1)

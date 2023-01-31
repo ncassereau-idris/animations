@@ -108,7 +108,7 @@ class Network(VGroup):
                 self.connections[i].forward_animation(self.standard_duration, **kwargs),
                 StartUpdater(
                     self.layers[i + 1].activations,
-                    fadeInAlphaFactory(self.layers[i + 1].activations, shift=0.2*DOWN),
+                    fadeInAlphaFactory(self.layers[i + 1].activations, shift=0.2*DOWN, has_fill=True),
                     run_time=0.2
                 )
             )
@@ -141,15 +141,12 @@ class Network(VGroup):
                 self.connections[i].backward_animation(self.standard_duration, **kwargs),
                 StartUpdater(
                     self.layers[i + 1].gradients,
-                    fadeInAlphaFactory(self.layers[i + 1].gradients, shift=0.2*DOWN),
-                    run_time=0.2
+                    fadeInAlphaFactory(self.layers[i + 1].gradients, shift=0.2*DOWN, has_fill=True),
+                    run_time=0.2,
                 )
             )
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             back_anim = Succession(back_anim, next_focus)
         back_anim = Succession(back_anim, relax)
-        return Succession(loss_anim, back_anim, StartUpdater(
-            self.loss, fadeOutAlphaFactory(self.loss, shift=0.2*UP), run_time=0.2
-        ))
-    
+        return Succession(loss_anim, back_anim, FadeOut(self.loss))

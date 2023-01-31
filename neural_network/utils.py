@@ -21,6 +21,7 @@ class StartUpdater(Animation):
             alpha = dt_sum / self.duration
             if alpha >= 1:
                 mob.remove_updater(updater)
+                alpha = 1
             self.interpolation(mob, alpha)
 
         return updater

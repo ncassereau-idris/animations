@@ -1,10 +1,12 @@
 from manim import *
 
 
+dummy = Dot().shift(1e10 * RIGHT)
+
 class StartUpdater(Animation):
 
     def __init__(self, mobject, interpolation, run_time=1, **kwargs):
-        super().__init__(mobject, run_time=run_time, **kwargs)
+        super().__init__(mobject, run_time=0, **kwargs)
         self.mobject_ = mobject
         self.interpolation = interpolation
         self.duration = run_time
@@ -23,16 +25,10 @@ class StartUpdater(Animation):
 
         return updater
 
-    def begin(self) -> None:
-        super().begin()
-
     def interpolate_mobject(self, alpha: float) -> None:
         if not self.started:
             self.mobject_.add_updater(self.make_updater())
             self.started = True
-
-    def clean_up_from_scene(self, scene: Scene) -> None:
-        super().clean_up_from_scene(scene)
 
 
 def fadeInAlphaFactory(mob, shift=None, has_fill=False):
@@ -60,5 +56,20 @@ def fadeInAlphaFactory(mob, shift=None, has_fill=False):
 
 
 def fadeOutAlphaFactory(mob, shift=None, has_fill=False):
-    f = fadeInAlphaFactory(mob, shift=-shift, has_fill=has_fill)
+    if shift is not None:
+        shift = -shift
+    f = fadeInAlphaFactory(mob, shift=shift, has_fill=has_fill)
     return lambda mob, alpha: f(mob, 1 - alpha)
+
+class DummyFadeOut(Animation):
+
+    def __init__(self, mobject, shift=None, **kwargs):
+        super().__init__(dummy, **kwargs)
+        self.mobject_ = mobject
+        self.shift = shift
+        self.base_position = mobject.get_center()
+
+    def interpolate_mobject(self, alpha: float) -> None:
+        self.mobject_.set_opacity(1 - alpha)
+        if self.shift is not None:
+            self.mobject_.move_to(self.base_position + alpha * self.shift)

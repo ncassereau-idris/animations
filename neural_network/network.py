@@ -1,7 +1,7 @@
 from manim import *
 import typing
 
-from neural_network.utils import StartUpdater, fadeInAlphaFactory, fadeOutAlphaFactory
+from .utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut
 from .connections import Connections
 from .layer import Layer
 
@@ -142,11 +142,12 @@ class Network(VGroup):
                 StartUpdater(
                     self.layers[i + 1].gradients,
                     fadeInAlphaFactory(self.layers[i + 1].gradients, shift=0.2*DOWN, has_fill=True),
-                    run_time=0.2,
+                    run_time=0.2
                 )
             )
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             back_anim = Succession(back_anim, next_focus)
         back_anim = Succession(back_anim, relax)
-        return Succession(loss_anim, back_anim, FadeOut(self.loss))
+
+        return Succession(loss_anim, back_anim, DummyFadeOut(self.loss, shift=.2*UP))

@@ -4,6 +4,7 @@ import typing
 from .utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut
 from .connections import Connections
 from .layer import Layer
+from .legend import Legend
 
 
 class Network(VGroup):
@@ -78,7 +79,7 @@ class Network(VGroup):
             l = self.connections[idx].length
         else:
             l = self.connections[0].length
-        return self.standard_duration * l / 2
+        return self.standard_duration * l
 
     def focus_relax(self, idx, reverse_sweep: bool = False):
         if (not reverse_sweep and idx == 0) or (reverse_sweep and idx == -1):
@@ -128,7 +129,7 @@ class Network(VGroup):
             LaggedStart(
                 AnimationGroup(FadeOut(self.output, shift=.2*UP), FadeOut(self.label, shift=.2*UP)),
                 FadeIn(self.loss, shift=.2*UP),
-                lag_ratio=.4
+                lag_ratio=.5
             )
         )
 
@@ -151,3 +152,8 @@ class Network(VGroup):
         back_anim = Succession(back_anim, relax)
 
         return Succession(loss_anim, back_anim, DummyFadeOut(self.loss, shift=.2*UP))
+
+    def add_legend(self, legend: Legend):
+        legend.append(self.layers[0].dots[0].copy(), "Input")
+        legend.append(self.layers[1].dots[0].copy(), "Hidden layer")
+        self.layers[0].add_legend(legend)

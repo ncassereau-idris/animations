@@ -26,7 +26,7 @@ class Connections(VGroup):
                 end=end.get_center(),
                 color=WHITE,
                 z_index=500,
-                dash_length=0.025,
+                dash_length=0.01,
                 stroke_width=3
             )
         else:

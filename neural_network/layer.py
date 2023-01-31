@@ -1,5 +1,5 @@
 from manim import *
-
+from .legend import Legend
 
 class MemorySquare(Square):
 
@@ -9,6 +9,12 @@ class MemorySquare(Square):
 
     def hide(self):
         self.set_opacity(0)
+        return self
+
+    def reveal(self):
+        self.set_fill(opacity=self.base_fill_opacity)
+        self.set_stroke(opacity=1)
+        return self
 
 
 class Layer(VMobject):
@@ -73,6 +79,11 @@ class Layer(VMobject):
             rate_func=linear
         )
         return focus, relax
+
+    def add_legend(self, legend: Legend):
+        legend.append(self.activations.copy().reveal(), "Activations")
+        legend.append(self.gradients.copy().reveal(), "Gradients")
+        legend.append(self.optimizer.copy().reveal(), "Optimizer states")
 
 
 def NeuronFocusAndRelax(

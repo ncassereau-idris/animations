@@ -24,7 +24,7 @@ class Legend(VMobject):
         self.symbols.append(symbol)
         self.texts.append(Text(text))
 
-    def build(self):
+    def build(self, location=UR):
         self.symbols_grp = VGroup(*self.symbols).arrange(DOWN)
         self.texts_grp = VGroup(*self.texts).arrange(DOWN)
         self.symbols_grp.scale_to_fit_width(0.1)
@@ -36,8 +36,9 @@ class Legend(VMobject):
         self.frame = RoundedRectangle(
             corner_radius=0.2,
             height=both.get_height() + 0.35,
-            width=both.get_width() + 0.35
+            width=both.get_width() + 0.35,
+            stroke_width=DEFAULT_STROKE_WIDTH / 2
         )
-        self.frame.to_edge(UR, buff=SMALL_BUFF)
+        self.frame.to_edge(location, buff=SMALL_BUFF)
         both.move_to(self.frame.get_center())
         self.add(self.frame, both)

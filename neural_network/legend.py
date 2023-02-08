@@ -1,15 +1,6 @@
 from manim import *
 
 
-class LegendLine(VMobject):
-
-    def __init__(self, symbol, text: str, **kwargs):
-        super().__init__(**kwargs)
-        self.symbol = symbol
-        self.text = Text(text)
-        self.add(VGroup(self.symbol, self.text).arrange(RIGHT))
-
-
 class Legend(VMobject):
 
     def __init__(self, **kwargs):

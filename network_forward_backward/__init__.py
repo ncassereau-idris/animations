@@ -1,5 +1,5 @@
-from .network import Network
-from .scene import SCENE
+from .neural_network.network import Network
+from .scene import ForwardBackwardScene
 from .legend import Legend
 
-__all__ = ["Network", "SCENE", "Legend"]
+__all__ = ["Network", "ForwardBackwardScene", "Legend"]

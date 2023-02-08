@@ -1,5 +1,5 @@
 from manim import *
-from .network import Network
+from .neural_network.network import Network
 from .legend import Legend
 
 config.pixel_height = 1080
@@ -7,7 +7,7 @@ config.pixel_width = 1920
 config.frame_width = 16
 config.frame_height = config.frame_width * config.pixel_height / config.pixel_width
 
-class SCENE(Scene):
+class ForwardBackwardScene(Scene):
     def construct(self):
         legend = Legend()
         net = Network([1, 1, 1, 1], standard_duration=0.125, square_layer=True, radius=0.1).scale(6)

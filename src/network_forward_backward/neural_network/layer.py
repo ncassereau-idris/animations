@@ -36,7 +36,7 @@ class Layer(VMobject):
             if not square_layer else
             Square(
                 stroke_color=self.color, side_length=radius,
-                z_index=1000, fill_opacity=1, fill_color=BLUE_B if not is_input else GREY_B
+                z_index=1000, fill_opacity=1, fill_color=self.color,
             ) for _ in range(neurons)
         ])
         self.dots.arrange(.5 * UP)

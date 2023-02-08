@@ -120,7 +120,7 @@ class Network(VGroup):
             relax, FadeOut(self.input), FadeIn(self.output, shift=0.2 * RIGHT)
         ))
 
-    def backward_animation(self, **kwargs):
+    def loss_animation(self, **kwargs):
         # Make the loss appear
         self.label.move_to(self.output).align_to(self.output, DOWN).shift(.5*RIGHT)
         self.loss.move_to(self.output)
@@ -132,7 +132,9 @@ class Network(VGroup):
                 lag_ratio=.5
             )
         )
+        return loss_anim
 
+    def backward_animation(self, **kwargs):
         # Start backpropagation
         focus, relax = self.focus_relax(-1, reverse_sweep=True)
         back_anim = focus
@@ -154,9 +156,8 @@ class Network(VGroup):
             focus, relax = self.focus_relax(i, reverse_sweep=True)
             next_focus = LaggedStart(relaxation, focus, lag_ratio=0.5)
             back_anim = Succession(back_anim, next_focus)
-        back_anim = Succession(back_anim, relax)
-
-        return Succession(loss_anim, back_anim, DummyFadeOut(self.loss, shift=.2*UP))
+        back_anim = Succession(back_anim, relax, FadeOut(self.loss))
+        return back_anim
 
     def add_legend(self, legend: Legend):
         legend.append(self.layers[0].dots[0].copy(), "Input")

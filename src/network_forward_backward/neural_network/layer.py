@@ -1,5 +1,5 @@
 from manim import *
-from ..legend import Legend
+from src.tools.legend import Legend
 
 class MemorySquare(Square):
 

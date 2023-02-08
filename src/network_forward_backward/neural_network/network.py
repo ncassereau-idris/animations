@@ -1,8 +1,8 @@
 from manim import *
 import typing
 
-from ..utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut
-from ..legend import Legend
+from src.tools.utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut
+from src.tools.legend import Legend
 from .connections import Connections
 from .layer import Layer
 

@@ -1,6 +1,6 @@
 from manim import *
 from .neural_network.network import Network
-from .legend import Legend
+from src.tools.legend import Legend
 
 config.pixel_height = 1080
 config.pixel_width = 1920

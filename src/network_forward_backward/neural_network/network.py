@@ -1,7 +1,7 @@
 from manim import *
 import typing
 
-from src.tools.utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut
+from src.tools.utils import StartUpdater, fadeInAlphaFactory, DummyFadeOut, fadeOutAlphaFactory
 from src.tools.legend import Legend
 from .connections import Connections
 from .layer import Layer
@@ -144,6 +144,11 @@ class Network(VGroup):
                     self.layers[i + 1].gradients,
                     fadeInAlphaFactory(self.layers[i + 1].gradients, shift=0.2*DOWN, has_fill=True),
                     run_time=0.2
+                ),
+                StartUpdater(
+                    self.layers[i + 1].activations,
+                    fadeOutAlphaFactory(self.layers[i + 1].activations, has_fill=True),
+                    run_time=0.3
                 )
             )
             focus, relax = self.focus_relax(i, reverse_sweep=True)

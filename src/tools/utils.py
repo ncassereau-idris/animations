@@ -1,5 +1,5 @@
 from manim import *
-
+import numpy as np
 
 dummy = Dot().shift(1e10 * RIGHT)
 
@@ -74,3 +74,40 @@ class DummyFadeOut(Animation):
         self.mobject_.set_opacity(1 - alpha)
         if self.shift is not None:
             self.mobject_.move_to(self.base_position + alpha * self.shift)
+
+
+class FadeInAndRotating(Rotating, FadeIn):
+
+    def __init__(
+        self, mobject: Mobject, fadeInAlpha: float = 0.25,
+        fadeOutAlpha: float = 0.25, rotate_rate_func=smooth,
+        fade_rate_func=linear, **kwargs: Any
+    ) -> None:
+        self.fadeInAlpha = fadeInAlpha
+        self.fadeOutAlpha = fadeOutAlpha
+        self.rotate_rate_func = rotate_rate_func
+        self.fade_rate_func = fade_rate_func
+        Rotating.__init__(self, mobject, **kwargs)
+        FadeIn.__init__(self, mobject, **kwargs)
+
+    def interpolate_mobject(self, alpha: float) -> None:
+        self.mobject.become(self.starting_mobject)
+        if alpha < self.fadeInAlpha:
+            FadeIn.interpolate_mobject(
+                self,
+                self.fade_rate_func(alpha / self.fadeInAlpha)
+            )
+        elif alpha > 1 - self.fadeOutAlpha:
+            FadeOut.interpolate_mobject(
+                self,
+                self.fade_rate_func((1 - alpha) / self.fadeOutAlpha)
+            )
+        else:
+            FadeIn.interpolate_mobject(self, 1)
+
+        self.mobject.rotate(
+            self.rotate_rate_func(alpha) * self.radians,
+            axis=self.axis,
+            about_point=self.about_point,
+            about_edge=self.about_edge,
+        )

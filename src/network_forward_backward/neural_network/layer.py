@@ -1,5 +1,8 @@
 from manim import *
+from manim.mobject.geometry.tips import ArrowTriangleFilledTip
+
 from src.tools.legend import Legend
+from src.tools.utils import FadeInAndRotating
 
 class MemorySquare(Square):
 
@@ -39,12 +42,51 @@ class Layer(VMobject):
                 z_index=1000, fill_opacity=1, fill_color=self.color,
             ) for _ in range(neurons)
         ])
+        self.update_arrows = None
         self.dots.arrange(.5 * UP)
         self.make_memory_objects()
         self.add(self.dots)
         self.add(self.activations, self.gradients, self.optimizer)
         self.hide(self.activations, self.gradients)
         self.maybe_hide_all()
+
+    def make_update_arrows(self):
+        arrows = []
+        for dot in self.dots:
+            center = dot.get_center()
+            y_translation = 0.5 * dot.get_height() / 2 * UP 
+            x_translation = (0.25 * dot.get_width() / 2) * RIGHT
+
+            top_point = center + y_translation
+            bottom_point = center - y_translation
+            arrows.append(ArcBetweenPoints(
+                top_point - x_translation, bottom_point - x_translation
+                ).add_tip(
+                    tip_shape=ArrowTriangleFilledTip,
+                    tip_length=0.1,
+                    tip_width=0.1
+                ).set_z_index(2000)
+            )
+            arrows.append(ArcBetweenPoints(
+                bottom_point + x_translation, top_point + x_translation
+                ).add_tip(
+                    tip_shape=ArrowTriangleFilledTip,
+                    tip_length=0.1,
+                    tip_width=0.1
+                ).set_z_index(2000)
+            )
+        self.update_arrows = VGroup(*arrows)#.fade(1)#.set_opacity(0)
+
+    def animate_arrows(self, run_time=1):
+        animations = []
+        for i in range(len(self.update_arrows)):
+            arrow = self.update_arrows[i]
+            dot = self.dots[i // 2]
+            animations.append(FadeInAndRotating(
+                arrow, angle=4*PI, about_point=dot.get_center(),
+                fadeInAlpha=0.25, fadeOutAlpha=0.25, run_time=run_time
+            ))
+        return AnimationGroup(*animations)
 
     def hide(self, *args):
         for object_ in args:

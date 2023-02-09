@@ -159,6 +159,37 @@ class Network(VGroup):
         back_anim = Succession(back_anim, relax, FadeOut(self.loss))
         return back_anim
 
+    def update_animation(self, rotation_run_time=2, **kwargs):
+        update_anim = []
+        restore = []
+
+        # Create appropriate update arrows
+        for layer in self.layers[1:]:
+            layer.make_update_arrows()
+
+        for i in range(len(self.arch) - 2, -1, -1):
+            self.layers[i + 1].dots.save_state()
+            update_anim.append(LaggedStart(
+                AnimationGroup(
+                    FadeOut(self.layers[i + 1].gradients, shift=0.2*UP),
+                    FadeOut(self.layers[i + 1].optimizer, shift=0.2*UP)
+                ),
+                self.layers[i + 1].dots.animate.set_color(DARK_BLUE),
+                lag_ratio=0.2
+            ))
+            restore.append(Restore(self.layers[i + 1].dots))
+            restore.append(FadeIn(self.layers[i + 1].optimizer, shift=0.2*DOWN))
+        update_anim = LaggedStart(*update_anim, lag_ratio=0.2)
+        update_anim = Succession(
+            update_anim,
+            AnimationGroup(
+                *[layer.animate_arrows(run_time=rotation_run_time)
+                for layer in self.layers[1:]]
+            ),
+        )
+
+        return update_anim, AnimationGroup(*restore)
+
     def add_legend(self, legend: Legend):
         legend.append(self.layers[0].dots[0].copy(), "Input")
         legend.append(self.layers[1].dots[0].copy(), "Hidden layer")

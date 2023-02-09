@@ -21,3 +21,7 @@ class ForwardBackwardScene(Scene):
         self.wait(1)
         self.play(net.backward_animation())
         self.wait(1)
+        update_anim, restore_anim = net.update_animation()
+        self.play(update_anim)
+        self.play(restore_anim, run_time=1)
+        self.wait(1)

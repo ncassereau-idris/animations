@@ -18,3 +18,6 @@ class RevealMultiWorkerScene(MovingCameraScene):
             width=workers[0].get_width() + 2 * LARGE_BUFF
         )
         self.play(Restore(self.camera.frame), run_time=5)
+        self.wait(2)
+        self.play(self.camera.frame.animate.shift(5*DOWN), run_time=2)
+        self.wait(10)

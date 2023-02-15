@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from manim import *
 
-from typing import Optional
+from typing import Optional, Any
 
 class Frame(VMobject):
 
@@ -17,7 +19,7 @@ class Frame(VMobject):
         vertical_padding: float = MED_LARGE_BUFF,
         horizontal_padding: float = LARGE_BUFF,
         min_width: Optional[float] = None,
-        **kwargs
+        **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
 
@@ -37,7 +39,7 @@ class Frame(VMobject):
         self.place_title()
         self.add(self.frame, self.title)
 
-    def scale(self, scale_factor: float, **kwargs):
+    def scale(self, scale_factor: float, **kwargs) -> Frame:
         self.title_content_buffer *= scale_factor
         return super().scale(scale_factor, **kwargs)
 

@@ -1,5 +1,5 @@
 from manim import *
-from typing import List, Optional
+from typing import List, Optional, Any, Generator
 from manim.utils.color import Colors
 from ...tools.frame import Frame
 
@@ -38,11 +38,10 @@ class Worker(Frame):
         )
 
         self.colors = list(self.make_colors())
-        self._data = None
         self.data = self.make_data(rows * cols, self.colors)
         self.add(self.data, self.title, self.frame)
 
-    def make_colors(self):
+    def make_colors(self) -> Generator[Colors, None, None]:
         for _ in range(self.rows):
             for i, color in enumerate(self.colors):
                 q, r = divmod(self.cols, len(self.colors))
@@ -51,7 +50,7 @@ class Worker(Frame):
                 for _ in range(q):
                     yield color
 
-    def make_data(self, num_blocks, colors):
+    def make_data(self, num_blocks: int, colors: List[Colors]) -> VGroup:
         data = [
             Square(color=colors[i], side_length=0.5, fill_opacity=0.5)
             for i in range(num_blocks)
@@ -59,13 +58,13 @@ class Worker(Frame):
         grp = VGroup(*data)
         return grp.arrange_in_grid(rows=self.rows, cols=self.cols)
 
-    def get_data(self):
+    def get_data(self) -> VMobject:
         return self._data
 
-    def set_data(self, value: VMobject):
+    def set_data(self, value: VMobject) -> None:
         self._data = self.place_new_content(value)
 
-    def del_data(self):
+    def del_data(self) -> None:
         del self._data
     
     data = property(get_data, set_data, del_data)

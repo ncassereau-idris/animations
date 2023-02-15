@@ -12,7 +12,7 @@ class ColorsColumnRotation:
         self,
         colors: List[Colors], 
         cols: int,
-        consecutive: bool = False # if less colors than columns, should it be cyclical or consecutive ?
+        consecutive: bool = False # if fewer colors than columns, should it be cyclical or consecutive ?
     ):
         self.colors = colors
         self.consecutive = consecutive

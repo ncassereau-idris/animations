@@ -1,7 +1,7 @@
 from manim import *
 
-from ..components.worker import Worker
-from ...tools.frame import Frame
+from .worker import Worker
+from ..tools.frame import Frame
 
 class MPIAllGatherScene(Scene):
 

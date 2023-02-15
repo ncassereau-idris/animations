@@ -1,7 +1,7 @@
 from manim import *
 from typing import List, Optional, Any, Generator
 from manim.utils.color import Colors
-from ...tools.frame import Frame
+from ..tools.frame import Frame
 
 DEFAULT_COLOR_LIST = [GREEN, BLUE, RED, YELLOW]
 

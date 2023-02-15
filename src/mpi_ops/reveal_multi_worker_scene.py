@@ -1,6 +1,6 @@
 from manim import *
 
-from ...tools.frame import Frame
+from ..tools.frame import Frame
 from .worker import Worker
 
 class RevealMultiWorkerScene(MovingCameraScene):

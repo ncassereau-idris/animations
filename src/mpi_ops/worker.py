@@ -1,9 +1,10 @@
 from manim import *
-from typing import List, Optional, Any, Generator
+from typing import List, Optional, Any
 from manim.utils.color import Colors
-from ..tools.frame import Frame
 
-DEFAULT_COLOR_LIST = [GREEN, BLUE, RED, YELLOW]
+from ..tools.frame import Frame
+from ..tools.colors import ColorsColumnRotation, DEFAULT_REDUCED_COLOR_LIST
+
 
 class Worker(Frame):
 
@@ -13,7 +14,7 @@ class Worker(Frame):
         rows: int = 1,
         cols: int = 1,
         blocks_side_length: float = 0.5,
-        colors: List[Colors] = DEFAULT_COLOR_LIST,
+        colors: List[Colors] = DEFAULT_REDUCED_COLOR_LIST,
         blocks_buffer: float = DEFAULT_MOBJECT_TO_MOBJECT_BUFFER,
         max_rows: Optional[int] = None,
         max_cols: Optional[int] = None,
@@ -37,22 +38,17 @@ class Worker(Frame):
             **kwargs
         )
 
-        self.colors = list(self.make_colors())
+        self.colors = ColorsColumnRotation(colors, cols=cols, consecutive=False)
         self.data = self.make_data(rows * cols, self.colors)
         self.add(self.data, self.title, self.frame)
 
-    def make_colors(self) -> Generator[Colors, None, None]:
-        for _ in range(self.rows):
-            for i, color in enumerate(self.colors):
-                q, r = divmod(self.cols, len(self.colors))
-                if i < r:
-                    q += 1
-                for _ in range(q):
-                    yield color
+    def scale(self, scale_factor: float, **kwargs) -> Frame:
+        self.blocks_buffer *= scale_factor
+        return super().scale(scale_factor, **kwargs)
 
-    def make_data(self, num_blocks: int, colors: List[Colors]) -> VGroup:
+    def make_data(self, num_blocks: int, colors: ColorsColumnRotation) -> VGroup:
         data = [
-            Square(color=colors[i], side_length=0.5, fill_opacity=0.5)
+            Square(color=colors.next(), side_length=0.5, fill_opacity=0.5)
             for i in range(num_blocks)
         ]
         grp = VGroup(*data)

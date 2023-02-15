@@ -1,41 +1,18 @@
 from manim import *
 
-from .worker import Worker
-from ..tools.frame import Frame
+from .prepare_scene import prepare_scene
 
 class MPIAllGatherScene(Scene):
 
     def construct(self):
         num_workers = 4
         cols = 8
-        scale = 0.35
 
-        workers = VGroup(*[
-            Worker(
-                rank=i,
-                rows=1,
-                cols=cols,
-                max_rows=num_workers,
-                max_cols=cols,
-                colors=[TEAL, GREEN, YELLOW, BLUE, RED, LIGHT_BROWN, WHITE, LIGHT_PINK]
-            ).scale(scale)
-            for i in range(num_workers)
-        ]).arrange(RIGHT, buff=LARGE_BUFF)
-        
-        comm = Frame(
-            title="Communicator",
-            grid_rows=num_workers,
-            grid_cols=cols,
-            grid_block_size=0.5,
-            grid_block_buffer=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER
-        ).scale(0.75)
-        VGroup(workers, comm).arrange(DOWN, buff=LARGE_BUFF)
-        
-        mpi_ops_title = Text("MPI_Allgather").scale(0.5).to_edge(UL, buff=SMALL_BUFF)
-        comm_data = comm.place_new_content(VGroup(*[
-            workers[i].data.copy()
-            for i in range(len(workers))
-        ]).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * scale))
+        workers, comm, mpi_ops_title, comm_data = prepare_scene(
+            title="MPI_Allgather",
+            num_workers=num_workers,
+            cols=cols
+        )
         self.add(workers, comm, mpi_ops_title)
 
         anim = [

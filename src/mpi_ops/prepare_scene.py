@@ -33,9 +33,9 @@ def prepare_scene(title: str, num_workers: int = 4, cols: int = 8, scale: float 
     VGroup(workers, comm).arrange(DOWN, buff=LARGE_BUFF)
 
     mpi_ops_title = Text(title).scale(0.5).to_edge(UL, buff=SMALL_BUFF)
-    comm_data = comm.place_new_content(VGroup(*[
+    comm.data = VGroup(*[
         workers[i].data.copy()
         for i in range(len(workers))
-    ]).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * scale))
+    ]).arrange(DOWN, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * scale)
 
-    return workers, comm, mpi_ops_title, comm_data
+    return workers, comm, mpi_ops_title

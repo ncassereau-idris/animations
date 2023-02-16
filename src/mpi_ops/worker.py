@@ -53,14 +53,3 @@ class Worker(Frame):
         ]
         grp = VGroup(*data)
         return grp.arrange_in_grid(rows=self.rows, cols=self.cols)
-
-    def get_data(self) -> VMobject:
-        return self._data
-
-    def set_data(self, value: VMobject) -> None:
-        self._data = self.place_new_content(value)
-
-    def del_data(self) -> None:
-        del self._data
-    
-    data = property(get_data, set_data, del_data)

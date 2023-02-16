@@ -10,7 +10,7 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         cols = 8
         scale = 0.35
 
-        workers, comm, mpi_ops_title, comm_data = prepare_scene(
+        workers, comm, mpi_ops_title = prepare_scene(
             title="MPI_Allreduce",
             num_workers=num_workers,
             cols=cols,
@@ -21,7 +21,7 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         self.next_section("all to all")
         anim = [
             LaggedStart(*[
-                ReplacementTransform(workers[work_idx].data[i], comm_data[work_idx][i])
+                ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
                 # do it in the reverse order if on the right side of the screen
                 for i in (
                     range(len(workers[work_idx].data))
@@ -48,7 +48,7 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
             for j in range(num_workers):
                 row = []
                 for k in range(start, stop):
-                    row.append(comm_data[j][k])
+                    row.append(comm.data[j][k])
                 data.append(VGroup(*row))
 
             worker.data = VGroup(*data).copy()
@@ -89,13 +89,13 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         self.wait(2)
 
         self.next_section("all gather")
-        comm_data = comm.place_new_content(VGroup(*[
+        comm.data = VGroup(*[
             workers[i].data.copy()
             for i in range(len(workers))
-        ]).arrange(RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * scale))
+        ]).arrange(RIGHT, buff=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER * scale)
         anim = [
             LaggedStart(*[
-                ReplacementTransform(workers[work_idx].data[i], comm_data[work_idx][i])
+                ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
                 for i in (
                     range(len(workers[work_idx].data))
                     if work_idx >= len(workers) // 2 else
@@ -109,10 +109,10 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         self.wait(1)
 
         for i, worker in enumerate(workers):
-            worker.data = comm_data.copy()
+            worker.data = comm.data.copy()
             if i < len(workers) - 1:
-                self.play(ReplacementTransform(comm_data.copy(), worker.data))
+                self.play(ReplacementTransform(comm.data.copy(), worker.data))
             else:
-                self.play(ReplacementTransform(comm_data, worker.data))
+                self.play(ReplacementTransform(comm.data, worker.data))
 
         self.wait(1)

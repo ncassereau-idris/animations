@@ -8,7 +8,7 @@ class MPIAllToAllScene(Scene):
         num_workers = 4
         cols = 10
 
-        workers, comm, mpi_ops_title, comm_data = prepare_scene(
+        workers, comm, mpi_ops_title = prepare_scene(
             title="MPI_Alltoall",
             num_workers=num_workers,
             cols=cols
@@ -17,7 +17,7 @@ class MPIAllToAllScene(Scene):
 
         anim = [
             LaggedStart(*[
-                ReplacementTransform(workers[work_idx].data[i], comm_data[work_idx][i])
+                ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
                 # do it in the reverse order if on the right side of the screen
                 for i in (
                     range(len(workers[work_idx].data))
@@ -43,7 +43,7 @@ class MPIAllToAllScene(Scene):
 
             for k in range(start, stop):
                 for j in range(num_workers):
-                    data.append(comm_data[j][k])
+                    data.append(comm.data[j][k])
             data = VGroup(*data)
             target = worker.place_new_content(
                 data.copy().arrange(RIGHT, worker.blocks_buffer)

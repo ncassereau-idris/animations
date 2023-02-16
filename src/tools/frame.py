@@ -38,6 +38,7 @@ class Frame(VMobject):
         self.frame = self.make_frame()
         self.place_title()
         self.add(self.frame, self.title)
+        self._data = None
 
     def scale(self, scale_factor: float, **kwargs) -> Frame:
         self.title_content_buffer *= scale_factor
@@ -80,3 +81,14 @@ class Frame(VMobject):
             aligned_edge=UP
         )
         return value
+
+    def get_data(self) -> VMobject:
+        return self._data
+
+    def set_data(self, value: VMobject) -> None:
+        self._data = self.place_new_content(value)
+
+    def del_data(self) -> None:
+        del self._data
+    
+    data = property(get_data, set_data, del_data)

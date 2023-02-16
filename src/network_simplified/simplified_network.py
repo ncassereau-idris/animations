@@ -1,0 +1,57 @@
+from manim import *
+from manim.utils.color import Colors
+
+from ..tools.frame import Frame
+
+class SimplifiedLayer(VMobject):
+
+    def __init__(self, layer_idx: int, **kwargs):
+        super().__init__(**kwargs)
+        self.layer_idx = layer_idx
+
+        self.frame = Frame(
+            title=f"Layer {self.layer_idx}",
+            grid_rows=4,
+            grid_cols=1,
+            grid_block_size=0.5,
+            grid_block_buffer=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER,
+            horizontal_padding=MED_SMALL_BUFF
+        )
+
+        self.activations = self.make_square(RED)
+        self.gradients = self.make_square(ORANGE)
+        self.parameters = self.make_square(BLUE)
+        self.optimizer = self.make_square(GREEN)
+
+        self.frame.data = VGroup(
+            self.parameters, self.activations, self.gradients, self.optimizer
+        ).arrange(DOWN)
+        self.add(self.frame, self.frame.data)
+
+    @staticmethod
+    def make_square(color: Colors) -> Square:
+        return Square(
+            side_length=0.5,
+            color=color,
+            fill_opacity=0.5,
+            stroke_width=2
+        )
+
+class SimplifiedNetwork(VMobject):
+
+    def __init__(self, rank: int = 0, num_layers: int = 4, **kwargs):
+        super().__init__(**kwargs)
+        self.rank = rank
+        self.num_layers = num_layers
+
+        self.layers = VGroup(*[
+            SimplifiedLayer(i) for i in range(1, self.num_layers + 1)
+        ]).arrange(RIGHT, buff=MED_SMALL_BUFF)
+
+        self.frame = Frame(
+            title=f"GPU {self.rank}",
+            content_height=self.layers.get_height(),
+            content_width=self.layers.get_width()
+        )
+        self.frame.data = self.layers
+        self.add(self.frame, self.frame.data)

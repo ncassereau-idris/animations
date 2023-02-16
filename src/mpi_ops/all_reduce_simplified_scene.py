@@ -1,4 +1,3 @@
-from unittest import skip
 from manim import *
 
 from .prepare_scene import prepare_scene

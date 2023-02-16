@@ -5,8 +5,7 @@ from .worker import Worker
 from ..tools.frame import Frame
 from ..tools.colors import DEFAULT_LONG_COLOR_LIST
 
-def prepare_scene(title: str, num_workers: int = 4, cols: int = 8):
-    scale = 0.35
+def prepare_scene(title: str, num_workers: int = 4, cols: int = 8, scale: float = 0.35):
     scene_max_width = config.frame_width - 2 * MED_LARGE_BUFF
 
     workers = VGroup(*[

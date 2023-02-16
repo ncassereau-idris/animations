@@ -6,11 +6,12 @@ from ..tools.frame import Frame
 def prepare_scene(
     title: str,
     num_workers: int = 4,
+    scale: float = 1
 ):
     scene_max_width = config.frame_width - 2 * MED_LARGE_BUFF
 
     networks = VGroup(*[
-        SimplifiedNetwork(rank=i, num_layers=num_workers)
+        SimplifiedNetwork(rank=i, num_layers=num_workers).scale(scale)
         for i in range(num_workers)
     ]).arrange(RIGHT, buff=MED_LARGE_BUFF)
 

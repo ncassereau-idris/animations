@@ -26,7 +26,13 @@ class SimplifiedLayer(VMobject):
         self.frame.data = VGroup(
             self.parameters, self.activations, self.gradients, self.optimizer
         ).arrange(DOWN)
-        self.add(self.frame, self.frame.data)
+
+        self.add(self.frame, self.parameters, self.optimizer, self.activations, self.gradients)
+        self.scale_factor = 1
+
+    def scale(self, scale_factor: float, **kwargs):
+        self.scale_factor *= scale_factor
+        return super().scale(scale_factor, **kwargs)
 
     @staticmethod
     def make_square(color: Colors) -> Square:
@@ -36,6 +42,7 @@ class SimplifiedLayer(VMobject):
             fill_opacity=0.5,
             stroke_width=2
         )
+
 
 class SimplifiedNetwork(VMobject):
 
@@ -55,3 +62,4 @@ class SimplifiedNetwork(VMobject):
         )
         self.frame.data = self.layers
         self.add(self.frame, self.frame.data)
+

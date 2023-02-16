@@ -39,9 +39,11 @@ class Frame(VMobject):
         self.place_title()
         self.add(self.frame, self.title)
         self._data = None
+        self.scale_factor = 1
 
     def scale(self, scale_factor: float, **kwargs) -> Frame:
         self.title_content_buffer *= scale_factor
+        self.scale_factor *= scale_factor
         return super().scale(scale_factor, **kwargs)
 
     def make_frame(self) -> RoundedRectangle:

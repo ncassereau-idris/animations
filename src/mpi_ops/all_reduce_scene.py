@@ -79,8 +79,8 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
                 for row in range(len(worker.data)):
                     reduce_col_anims.append(FadeOut(
                         worker.data[row][col],
-                        shift=filled_square.get_center() - worker.data[row][col].get_center()),
-                    )
+                        shift=filled_square.get_center() - worker.data[row][col].get_center()
+                    ))
                 reduce_worker_anims.append(AnimationGroup(*reduce_col_anims, FadeIn(filled_square)))
             reduce_anims.append(LaggedStart(*reduce_worker_anims, lag_ratio=0.05))
             worker.data = VGroup(*new_worker_data)

@@ -6,12 +6,17 @@ from ..tools.frame import Frame
 def prepare_scene(
     title: str,
     num_workers: int = 4,
-    scale: float = 1
+    scale: float = 1,
+    zero_optimizer: bool = False
 ):
     scene_max_width = config.frame_width - 2 * MED_LARGE_BUFF
 
     networks = VGroup(*[
-        SimplifiedNetwork(rank=i, num_layers=num_workers).scale(scale)
+        SimplifiedNetwork(
+            rank=i,
+            num_layers=num_workers,
+            optimizer_indices=[i+1] if zero_optimizer else None
+        ).scale(scale)
         for i in range(num_workers)
     ]).arrange(RIGHT, buff=MED_LARGE_BUFF)
 
@@ -28,5 +33,7 @@ def prepare_scene(
     VGroup(networks, comm).arrange(DOWN, buff=LARGE_BUFF)
 
     title = Text(title).scale(0.5).to_edge(UL, buff=SMALL_BUFF)
-
+    for network in networks:
+        for layer in network.layers:
+            layer.remove(layer.gradients, layer.activations)
     return networks, comm, title

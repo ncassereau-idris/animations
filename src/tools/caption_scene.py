@@ -7,8 +7,8 @@ class CaptionScene(Scene):
         return FadeIn(self.caption, shift=MED_LARGE_BUFF * DOWN)
 
     def caption_fade_out(self) -> FadeOut:
-        fadeout = FadeOut(self.captions, shift=MED_LARGE_BUFF * DOWN)
-        self.captions = None
+        fadeout = FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN)
+        self.caption = None
         return fadeout
 
     def caption_replace(self, new_text: str) -> AnimationGroup:

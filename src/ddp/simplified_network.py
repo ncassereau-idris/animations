@@ -1,11 +1,12 @@
 from manim import *
 from manim.utils.color import Colors
+from typing import Optional
 
 from ..tools.frame import Frame
 
 class SimplifiedLayer(VMobject):
 
-    def __init__(self, layer_idx: int, **kwargs):
+    def __init__(self, layer_idx: int, optimizer: bool = True, **kwargs):
         super().__init__(**kwargs)
         self.layer_idx = layer_idx
 
@@ -17,6 +18,8 @@ class SimplifiedLayer(VMobject):
             grid_block_buffer=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER,
             horizontal_padding=MED_SMALL_BUFF
         )
+
+        self.show_optimizer = optimizer
 
         self.activations = self.make_square(RED)
         self.gradients = self.make_square(ORANGE)
@@ -40,7 +43,9 @@ class SimplifiedLayer(VMobject):
         self.parameters.move_to(self.parameters_ghost)
         self.optimizer.move_to(self.optimizer_ghost)
 
-        self.add(self.frame, self.frame.data, self.parameters, self.optimizer, self.activations, self.gradients)
+        self.add(self.frame, self.frame.data, self.parameters, self.activations, self.gradients)
+        if optimizer:
+            self.add(self.optimizer)
         self.scale_factor = 1
 
     def scale(self, scale_factor: float, **kwargs):
@@ -59,13 +64,22 @@ class SimplifiedLayer(VMobject):
 
 class SimplifiedNetwork(VMobject):
 
-    def __init__(self, rank: int = 0, num_layers: int = 4, **kwargs):
+    def __init__(
+        self,
+        rank: int = 0,
+        num_layers: int = 4,
+        optimizer_indices: Optional[list[int]] = None,
+        **kwargs
+    ):
         super().__init__(**kwargs)
         self.rank = rank
         self.num_layers = num_layers
 
         self.layers = VGroup(*[
-            SimplifiedLayer(i) for i in range(1, self.num_layers + 1)
+            SimplifiedLayer(
+                i,
+                optimizer=optimizer_indices is not None and i in optimizer_indices
+            ) for i in range(1, self.num_layers + 1)
         ]).arrange(RIGHT, buff=MED_SMALL_BUFF)
 
         self.frame = Frame(
@@ -75,4 +89,3 @@ class SimplifiedNetwork(VMobject):
         )
         self.frame.data = self.layers
         self.add(self.frame, self.frame.data)
-

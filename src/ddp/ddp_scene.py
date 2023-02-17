@@ -16,9 +16,6 @@ class DDPScene(CaptionScene):
             scale=scale
         )
         self.add(networks, comm, title)
-        for network in networks:
-            for layer in network.layers:
-                layer.remove(layer.gradients, layer.activations)
 
         self.next_section("forward")
         x = self.italic_text("x")
@@ -117,6 +114,7 @@ class DDPScene(CaptionScene):
                 anim_network.append(ReplacementTransform(source, target))
             self.play(AnimationGroup(*anim_network))
 
+        self.wait(0.5)
         self.play(self.caption_replace("Update parameters"))
         anim = []
         for network in networks:

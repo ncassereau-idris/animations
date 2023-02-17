@@ -1,13 +1,10 @@
 from manim import *
 
 from .prepare_scene import prepare_scene
+from ..tools.caption_scene import CaptionScene
 
 
-class DDPScene(Scene):
-
-    @staticmethod
-    def make_text(text: str) -> MarkupText:
-        return MarkupText(text=text).scale(0.5).to_edge(DOWN)
+class DDPScene(CaptionScene):
 
     def construct(self):
         num_workers = 4
@@ -24,8 +21,8 @@ class DDPScene(Scene):
                 layer.remove(layer.gradients, layer.activations)
 
         self.next_section("forward")
-        x = MarkupText(text="<i>x</i>")
-        y = MarkupText(text="<i>y</i>")
+        x = self.italic_text("x")
+        y = self.italic_text("y")
         anim = []
         for network in networks:
             network.x = x.copy()
@@ -39,10 +36,9 @@ class DDPScene(Scene):
                 FadeIn(network.x, shift=SMALL_BUFF * DOWN),
                 FadeIn(network.y, shift=SMALL_BUFF * DOWN)
             ])
-        self.caption = self.make_text("Forward: storage of activations")
-        self.next_caption = self.make_text("Backward: storage of gradients, suppression of activations")
+
         self.play(
-            FadeIn(self.caption, shift=MED_LARGE_BUFF * DOWN),
+            self.caption_fade_in("Forward: storage of activations"),
             AnimationGroup(*anim)
         )
 
@@ -59,12 +55,9 @@ class DDPScene(Scene):
         self.play(AnimationGroup(*anim))
 
         self.next_section("backward")
-        self.play(
-            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
-            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
-        )
-        self.caption = self.next_caption
-        self.next_caption = self.make_text("Gather gradients")
+        self.play(self.caption_replace(
+            "Backward: storage of gradients, suppression of activations"
+        ))
         anim = []
         for network in networks:
             network_anim = []
@@ -84,13 +77,7 @@ class DDPScene(Scene):
         self.play(AnimationGroup(*anim))
 
         self.next_section("gradients all reduce")
-        self.play(
-            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
-            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
-        )
-        self.caption = self.next_caption
-        self.next_caption = self.make_text("Reduce gradients")
-
+        self.play(self.caption_replace("Gather gradients"))
         comm.data = VGroup(*[
             VGroup(*[
                 layer.gradients.copy()
@@ -109,12 +96,7 @@ class DDPScene(Scene):
             anim.append(AnimationGroup(*anim_network))
         self.play(LaggedStart(*anim, lag_ratio=0.1), run_time=3)
 
-        self.play(
-            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
-            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
-        )
-        self.caption = self.next_caption
-        self.next_caption = self.make_text("Broadcast reduced gradients")
+        self.play(self.caption_replace("Reduce gradients"))
         anim = []
         for i in range(1, len(comm.data)):
             for j in range(len(comm.data[i])):
@@ -124,13 +106,7 @@ class DDPScene(Scene):
                 ))
         self.play(AnimationGroup(*anim))
 
-        self.play(
-            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
-            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
-        )
-        self.caption = self.next_caption
-        self.next_caption = self.make_text("Update parameters")
-
+        self.play(self.caption_replace("Broadcast reduced gradients"))
         for i, network in enumerate(networks):
             anim_network = []
             for j, layer in enumerate(network.layers):
@@ -141,10 +117,7 @@ class DDPScene(Scene):
                 anim_network.append(ReplacementTransform(source, target))
             self.play(AnimationGroup(*anim_network))
 
-        self.play(
-            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
-            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
-        )
+        self.play(self.caption_replace("Update parameters"))
         anim = []
         for network in networks:
             for layer in network.layers:
@@ -159,5 +132,5 @@ class DDPScene(Scene):
                 anim.append(Indicate(layer.parameters))
         self.play(AnimationGroup(*anim), run_time=2)
 
-        self.play(FadeOut(self.next_caption, shift=MED_LARGE_BUFF * DOWN))
+        self.play(self.caption_fade_out())
         self.wait(3)

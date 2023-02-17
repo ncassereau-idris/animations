@@ -23,11 +23,24 @@ class SimplifiedLayer(VMobject):
         self.parameters = self.make_square(BLUE)
         self.optimizer = self.make_square(GREEN)
 
+        self.activations_ghost = self.activations.copy().set_opacity(0)
+        self.gradients_ghost = self.gradients.copy().set_opacity(0)
+        self.parameters_ghost = self.parameters.copy().set_opacity(0)
+        self.optimizer_ghost = self.optimizer.copy().set_opacity(0)
+        
         self.frame.data = VGroup(
-            self.parameters, self.activations, self.gradients, self.optimizer
+            self.parameters_ghost,
+            self.activations_ghost,
+            self.gradients_ghost,
+            self.optimizer_ghost
         ).arrange(DOWN)
 
-        self.add(self.frame, self.parameters, self.optimizer, self.activations, self.gradients)
+        self.activations.move_to(self.activations_ghost)
+        self.gradients.move_to(self.gradients_ghost)
+        self.parameters.move_to(self.parameters_ghost)
+        self.optimizer.move_to(self.optimizer_ghost)
+
+        self.add(self.frame, self.frame.data, self.parameters, self.optimizer, self.activations, self.gradients)
         self.scale_factor = 1
 
     def scale(self, scale_factor: float, **kwargs):

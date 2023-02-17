@@ -134,9 +134,7 @@ class DDPScene(Scene):
         for i, network in enumerate(networks):
             anim_network = []
             for j, layer in enumerate(network.layers):
-                layer.frame.place_new_content(VGroup(
-                    layer.gradients.copy(), layer.gradients.copy(), layer.gradients))
-                target = layer.gradients
+                target = layer.gradients.move_to(layer.gradients_ghost)
                 source = comm.data[0][j]
                 if i < len(networks) - 1:
                     source = source.copy()

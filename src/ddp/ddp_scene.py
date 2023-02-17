@@ -10,12 +10,12 @@ class DDPScene(CaptionScene):
         num_workers = 4
         scale = 0.35
 
-        networks, comm, title = prepare_scene(
+        networks, comm, title, legend = prepare_scene(
             title="Distributed Data Parallel",
             num_workers=num_workers,
             scale=scale
         )
-        self.add(networks, comm, title)
+        self.add(networks, comm, title, legend)
 
         self.next_section("forward")
         x = self.italic_text("x")

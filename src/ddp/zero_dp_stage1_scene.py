@@ -10,13 +10,13 @@ class ZeroDPStage1Scene(CaptionScene):
         num_workers = 4
         scale = 0.35
 
-        networks, comm, title = prepare_scene(
+        networks, comm, title, legend = prepare_scene(
             title="ZeRO - Stage 1",
             num_workers=num_workers,
             scale=scale,
             zero_optimizer=True
         )
-        self.add(networks, comm, title)
+        self.add(networks, comm, title, legend)
 
         self.wait(2)
         self.next_section("forward")
@@ -132,6 +132,7 @@ class ZeroDPStage1Scene(CaptionScene):
         self.play(AnimationGroup(*anim), run_time=2)
 
         self.next_section("parameters all gather")
+        self.wait(0.5)
         self.play(self.caption_replace("Gather parameters from all workers"))
         comm.data = VGroup(*[
             layer.parameters.copy()

@@ -36,4 +36,27 @@ def prepare_scene(
     for network in networks:
         for layer in network.layers:
             layer.remove(layer.gradients, layer.activations)
-    return networks, comm, title
+
+    layer = networks[0].layers[0]
+    legend_rows = [
+        (layer.parameters, Text("Parameters")),
+        (layer.activations, Text("Activations")),
+        (layer.gradients, Text("Gradients")),
+        (layer.optimizer, Text("Optimizer states"))
+    ]
+    
+    text_scale = Text("a").get_height()
+    legend = (
+        VGroup(*[
+            VGroup(
+                square.copy().scale_to_fit_height(text_scale),
+                text
+            ).arrange(RIGHT)
+            for square, text in legend_rows
+        ])
+        .arrange(DOWN, aligned_edge=LEFT)
+        .scale_to_fit_height(config.frame_height / 10)
+        .to_edge(DR, buff=SMALL_BUFF)
+    )
+
+    return networks, comm, title, legend

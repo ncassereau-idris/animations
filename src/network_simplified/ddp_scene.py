@@ -131,18 +131,35 @@ class DDPScene(Scene):
         self.caption = self.next_caption
         self.next_caption = self.make_text("Update parameters")
 
-        anim = []
         for i, network in enumerate(networks):
             anim_network = []
             for j, layer in enumerate(network.layers):
+                layer.frame.place_new_content(VGroup(
+                    layer.gradients.copy(), layer.gradients.copy(), layer.gradients))
+                target = layer.gradients
+                source = comm.data[0][j]
                 if i < len(networks) - 1:
-                    anim_network.append(ReplacementTransform(
-                        comm.data[0][j].copy(), layer.gradients
-                    ))
-                else:
-                    anim_network.append(ReplacementTransform(
-                        comm.data[0][j], layer.gradients
-                    ))
-            anim.append(AnimationGroup(*anim_network))
-        self.play(Succession(*anim))
-            
+                    source = source.copy()
+                anim_network.append(ReplacementTransform(source, target))
+            self.play(AnimationGroup(*anim_network))
+
+        self.play(
+            FadeOut(self.caption, shift=MED_LARGE_BUFF * DOWN),
+            FadeIn(self.next_caption, shift=MED_LARGE_BUFF * DOWN)
+        )
+        anim = []
+        for network in networks:
+            for layer in network.layers:
+                anim.append(FadeOut(
+                    layer.gradients,
+                    shift=layer.parameters.get_center() - layer.gradients.get_center()
+                ))
+                anim.append(FadeOut(
+                    layer.optimizer.copy(),
+                    shift=layer.parameters.get_center() - layer.optimizer.get_center()
+                ))
+                anim.append(Indicate(layer.parameters))
+        self.play(AnimationGroup(*anim), run_time=2)
+
+        self.play(FadeOut(self.next_caption, shift=MED_LARGE_BUFF * DOWN))
+        self.wait(3)

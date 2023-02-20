@@ -78,7 +78,7 @@ class SimplifiedNetwork(VMobject):
         self.layers = VGroup(*[
             SimplifiedLayer(
                 i,
-                optimizer=optimizer_indices is not None and i in optimizer_indices
+                optimizer=optimizer_indices is None or i in optimizer_indices
             ) for i in range(1, self.num_layers + 1)
         ]).arrange(RIGHT, buff=MED_SMALL_BUFF)
 
@@ -89,3 +89,7 @@ class SimplifiedNetwork(VMobject):
         )
         self.frame.data = self.layers
         self.add(self.frame, self.frame.data)
+
+    def scene_init(self):
+        for layer in self.layers:
+            layer.remove(layer.gradients, layer.activations)

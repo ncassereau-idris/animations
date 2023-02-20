@@ -33,9 +33,6 @@ def prepare_scene(
     VGroup(networks, comm).arrange(DOWN, buff=LARGE_BUFF)
 
     title = Text(title).scale(0.5).to_edge(UL, buff=SMALL_BUFF)
-    for network in networks:
-        for layer in network.layers:
-            layer.remove(layer.gradients, layer.activations)
 
     layer = networks[0].layers[0]
     legend_rows = [

@@ -2,10 +2,12 @@ from manim import *
 from itertools import chain
 
 from .prepare_scene import prepare_scene
+from ..tools.caption_scene import CaptionScene
 
-class MPIAllReduceScene(Scene): # All to all then reduce then all gather
+class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
 
     def construct(self):
+        lagged_animation_all_to_all = True
         num_workers = 4
         cols = 8
         scale = 0.35
@@ -19,6 +21,7 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         self.add(workers, comm, mpi_ops_title)
 
         self.next_section("all to all")
+        self.play(self.caption_fade_in("MPI_Alltoall"))
         anim = [
             LaggedStart(*[
                 ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
@@ -58,12 +61,13 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
             anim.append(LaggedStart(*[
                 ReplacementTransform(data[j], target[j])
                 for j in range(len(data))
-            ], lag_ratio=0.025))
+            ], lag_ratio=0.025 if lagged_animation_all_to_all else 0))
 
         self.play(LaggedStart(*anim, lag_ratio=0.5), run_time=5)
         self.wait(1)
 
         self.next_section("local reduce")
+        self.play(self.caption_replace("Local reduction"))
         reduce_anims = []
         for worker in workers:
             reduce_worker_anims = []
@@ -89,6 +93,7 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
         self.wait(2)
 
         self.next_section("all gather")
+        self.play(self.caption_replace("MPI_Allgather"))
         comm.data = VGroup(*[
             workers[i].data.copy()
             for i in range(len(workers))
@@ -115,4 +120,5 @@ class MPIAllReduceScene(Scene): # All to all then reduce then all gather
             else:
                 self.play(ReplacementTransform(comm.data, worker.data))
 
+        self.play(self.caption_fade_out())
         self.wait(1)

@@ -15,6 +15,10 @@ class MPIAllReduceSimplifiedScene(Scene): # Allgather then local reduce
         )
         self.add(workers, comm, mpi_ops_title)
 
+        # Make blocks fade in for smooth starting point
+        self.play(AnimationGroup(*[worker.scene_init() for worker in workers]))
+        self.wait(1)
+
         self.next_section("all gather")
         # All gather
         anim = [
@@ -55,10 +59,11 @@ class MPIAllReduceSimplifiedScene(Scene): # Allgather then local reduce
                 reduce_worker_anims.append(
                     AnimationGroup(*reduce_col_anims)
                 )
-            reduce_anims.append(
-                LaggedStart(*reduce_worker_anims, lag_ratio=0.05)
-            )
+            reduce_anims.append(AnimationGroup(*reduce_worker_anims))
         reduce_anims = AnimationGroup(*reduce_anims)
         self.play(reduce_anims, run_time=5)
+        self.wait(1)
+        # Make blocks fade out for smooth ending
+        self.play(AnimationGroup(*[worker.scene_cleanup() for worker in workers]))
         self.wait(2)
             

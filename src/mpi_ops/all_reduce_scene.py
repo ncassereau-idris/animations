@@ -68,10 +68,9 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
             ], lag_ratio=0.025 if lagged_animation_all_to_all else 0))
 
         self.play(LaggedStart(*anim, lag_ratio=0.5), run_time=5)
-        self.wait(1)
 
         self.next_section("local reduce")
-        self.play(self.caption_replace("Local reduction"))
+        self.play_caption_replace("Local reduction", wait_time=1)
         reduce_anims = []
         for worker in workers:
             reduce_worker_anims = []
@@ -94,10 +93,9 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
             worker.data = VGroup(*new_worker_data)
         reduce_anims = AnimationGroup(*reduce_anims)
         self.play(reduce_anims, run_time=5)
-        self.wait(1)
 
         self.next_section("all gather")
-        self.play(self.caption_replace("MPI_Allgather"))
+        self.play_caption_replace("MPI_Allgather", wait_time=1)
         comm.data = VGroup(*[
             workers[i].data.copy()
             for i in range(len(workers))

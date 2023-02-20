@@ -15,6 +15,10 @@ class MPIAllToAllScene(Scene):
         )
         self.add(workers, comm, mpi_ops_title)
 
+        # Make blocks fade in for smooth starting point
+        self.play(AnimationGroup(*[worker.scene_init() for worker in workers]))
+        self.wait(1)
+
         anim = [
             LaggedStart(*[
                 ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
@@ -45,14 +49,15 @@ class MPIAllToAllScene(Scene):
                 for j in range(num_workers):
                     data.append(comm.data[j][k])
             data = VGroup(*data)
-            target = worker.place_new_content(
-                data.copy().arrange(RIGHT, worker.blocks_buffer)
-            )
+            worker.data = data.copy().arrange(RIGHT, worker.blocks_buffer)
 
             anim.append(LaggedStart(*[
-                Transform(data[j], target[j])
+                ReplacementTransform(data[j], worker.data[j])
                 for j in range(len(data))
             ], lag_ratio=0.025))
 
         self.play(LaggedStart(*anim, lag_ratio=0.5), run_time=5)
         self.wait(1)
+        # Make blocks fade out for smooth ending
+        self.play(AnimationGroup(*[worker.scene_cleanup() for worker in workers]))
+        self.wait(2)

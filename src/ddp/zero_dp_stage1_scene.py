@@ -18,7 +18,11 @@ class ZeroDPStage1Scene(CaptionScene):
         )
         self.add(networks, comm, title, legend)
 
-        self.wait(2)
+        # Make blocks fade in for smooth starting point
+        for network in networks:
+            network.scene_init()
+        self.wait(1)
+
         self.next_section("forward")
         x = self.italic_text("x")
         y = self.italic_text("y")
@@ -54,9 +58,9 @@ class ZeroDPStage1Scene(CaptionScene):
         self.play(AnimationGroup(*anim))
 
         self.next_section("backward")
-        self.play(self.caption_replace(
-            "Backward: storage of gradients, suppression of activations"
-        ))
+        self.play_caption_replace(
+            "Backward: storage of gradients, suppression of activations", wait_time=1
+        )
         anim = []
         for network in networks:
             network_anim = []
@@ -76,7 +80,7 @@ class ZeroDPStage1Scene(CaptionScene):
         self.play(AnimationGroup(*anim))
 
         self.next_section("gradients reduce")
-        self.play(self.caption_replace("Gather gradients"))
+        self.play_caption_replace("Gather gradients", wait_time=1)
         comm.data = VGroup(*[
             VGroup(*[
                 layer.gradients.copy()
@@ -95,7 +99,7 @@ class ZeroDPStage1Scene(CaptionScene):
             anim.append(AnimationGroup(*anim_network))
         self.play(LaggedStart(*anim, lag_ratio=0.1), run_time=3)
 
-        self.play(self.caption_replace("Reduce gradients"))
+        self.play_caption_replace("Reduce gradients", wait_time=1)
         anim = []
         for i in range(1, len(comm.data)):
             for j in range(len(comm.data[i])):
@@ -105,7 +109,7 @@ class ZeroDPStage1Scene(CaptionScene):
                 ))
         self.play(AnimationGroup(*anim))
 
-        self.play(self.caption_replace("Fetch reduced gradients"))
+        self.play_caption_replace("Fetch reduced gradients", wait_time=1)
         for i, network in enumerate(networks):
             anim_network = []
             for j, layer in enumerate(network.layers):
@@ -115,7 +119,9 @@ class ZeroDPStage1Scene(CaptionScene):
                     anim_network.append(ReplacementTransform(source, target))
             self.play(AnimationGroup(*anim_network))
 
-        self.play(self.caption_replace("Workers update parameters for their assigned layers"))
+        self.play_caption_replace(
+            "Workers update parameters for their assigned layers", wait_time=1
+        )
         anim = []
         for network in networks:
             for layer in network.layers:
@@ -132,8 +138,7 @@ class ZeroDPStage1Scene(CaptionScene):
         self.play(AnimationGroup(*anim), run_time=2)
 
         self.next_section("parameters all gather")
-        self.wait(0.5)
-        self.play(self.caption_replace("Gather parameters from all workers"))
+        self.play_caption_replace("Gather parameters from all workers", wait_time=1)
         comm.data = VGroup(*[
             layer.parameters.copy()
             for network in networks
@@ -154,6 +159,7 @@ class ZeroDPStage1Scene(CaptionScene):
                 else:
                     anim.append(FadeOut(layer.parameters))
         self.play(*anim, run_time=2)
+        self.wait(1)
 
         for i, network in enumerate(networks):
             anim_network = []
@@ -166,4 +172,4 @@ class ZeroDPStage1Scene(CaptionScene):
             self.play(AnimationGroup(*anim_network))
 
         self.play(self.caption_fade_out())
-        self.wait(3)
+        self.wait(2)

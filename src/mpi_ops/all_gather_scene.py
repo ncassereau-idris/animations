@@ -16,9 +16,7 @@ class MPIAllGatherScene(Scene):
         self.add(workers, comm, mpi_ops_title)
 
         # Make blocks fade in for smooth starting point
-        self.play(AnimationGroup(*[
-            FadeIn(worker.data, shift=SMALL_BUFF * DOWN) for worker in workers
-        ]))
+        self.play(AnimationGroup(*[worker.scene_init() for worker in workers]))
 
         anim = [
             LaggedStart(*[
@@ -44,5 +42,5 @@ class MPIAllGatherScene(Scene):
 
         self.wait(1)
         # Make blocks fade out for smooth ending
-        self.play(AnimationGroup(*[FadeOut(worker.data) for worker in workers]))
+        self.play(AnimationGroup(*[worker.scene_cleanup() for worker in workers]))
         self.wait(2)

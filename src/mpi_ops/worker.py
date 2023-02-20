@@ -53,3 +53,10 @@ class Worker(Frame):
         ]
         grp = VGroup(*data)
         return grp.arrange_in_grid(rows=self.rows, cols=self.cols)
+
+    def scene_init(self):
+        self.remove(self.data)
+        return FadeIn(self.data, shift=SMALL_BUFF * DOWN)
+
+    def scene_cleanup(self):
+        return FadeOut(self.data)

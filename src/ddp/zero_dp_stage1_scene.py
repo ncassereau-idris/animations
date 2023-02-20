@@ -135,6 +135,8 @@ class ZeroDPStage1Scene(CaptionScene):
                         shift=layer.parameters.get_center() - layer.optimizer.get_center()
                     ))
                     anim.append(Indicate(layer.parameters))
+                else:
+                    anim.append(FadeOut(layer.parameters))
         self.play(AnimationGroup(*anim), run_time=2)
 
         self.next_section("parameters all gather")
@@ -156,8 +158,6 @@ class ZeroDPStage1Scene(CaptionScene):
                         comm.data[idx]
                     ))
                     idx += 1
-                else:
-                    anim.append(FadeOut(layer.parameters))
         self.play(*anim, run_time=2)
         self.wait(1)
 

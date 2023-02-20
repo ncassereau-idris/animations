@@ -20,6 +20,10 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
         )
         self.add(workers, comm, mpi_ops_title)
 
+        # Make blocks fade in for smooth starting point
+        self.play(AnimationGroup(*[worker.scene_init() for worker in workers]))
+        self.wait(1)
+
         self.next_section("all to all")
         self.play(self.caption_fade_in("MPI_Alltoall"))
         anim = [
@@ -86,11 +90,11 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
                         shift=filled_square.get_center() - worker.data[row][col].get_center()
                     ))
                 reduce_worker_anims.append(AnimationGroup(*reduce_col_anims, FadeIn(filled_square)))
-            reduce_anims.append(LaggedStart(*reduce_worker_anims, lag_ratio=0.05))
+            reduce_anims.append(AnimationGroup(*reduce_worker_anims))
             worker.data = VGroup(*new_worker_data)
         reduce_anims = AnimationGroup(*reduce_anims)
         self.play(reduce_anims, run_time=5)
-        self.wait(2)
+        self.wait(1)
 
         self.next_section("all gather")
         self.play(self.caption_replace("MPI_Allgather"))
@@ -122,3 +126,6 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
 
         self.play(self.caption_fade_out())
         self.wait(1)
+        # Make blocks fade out for smooth ending
+        self.play(AnimationGroup(*[worker.scene_cleanup() for worker in workers]))
+        self.wait(2)

@@ -28,7 +28,7 @@ class ZeroDPStage2Scene(CaptionScene):
             VGroup(network.x, network.y).arrange(RIGHT).move_to(
                 network.frame.get_top() + UP * SMALL_BUFF,
                 aligned_edge=DOWN
-            ).scale(0.7)
+            ).scale(2 * scale)
             network.y.align_to(network.x, UP)
             anim.extend([
                 FadeIn(network.x, shift=SMALL_BUFF * DOWN),

@@ -29,7 +29,7 @@ def prepare_scene(
         grid_cols=10,
         grid_block_size=0.5,
         grid_block_buffer=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER
-    ).scale(0.75)
+    ).scale(2 * scale)
     VGroup(networks, comm).arrange(DOWN, buff=LARGE_BUFF)
 
     title = Text(title).scale(0.5).to_edge(UL, buff=SMALL_BUFF)

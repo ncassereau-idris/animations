@@ -29,8 +29,11 @@ def prepare_scene(title: str, num_workers: int = 4, cols: int = 8, scale: float 
         grid_cols=cols,
         grid_block_size=0.5,
         grid_block_buffer=DEFAULT_MOBJECT_TO_MOBJECT_BUFFER
-    ).scale(0.75)
+    ).scale(2 * scale)
     VGroup(workers, comm).arrange(DOWN, buff=LARGE_BUFF)
+
+    for worker in workers:
+        worker.remove(worker.data)
 
     mpi_ops_title = Text(title).scale(0.5).to_edge(UL, buff=SMALL_BUFF)
     comm.data = VGroup(*[

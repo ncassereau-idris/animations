@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from manim import *
-
 from typing import Optional, Any
 
 class Frame(VMobject):

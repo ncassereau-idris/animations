@@ -49,7 +49,7 @@ class Worker(Frame):
     def make_data(self, num_blocks: int, colors: ColorsColumnRotation) -> VGroup:
         data = [
             Square(color=colors.next(), side_length=0.5, fill_opacity=0.5)
-            for i in range(num_blocks)
+            for _ in range(num_blocks)
         ]
         grp = VGroup(*data)
         return grp.arrange_in_grid(rows=self.rows, cols=self.cols)

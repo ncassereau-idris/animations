@@ -47,8 +47,8 @@ class MPIAllToAllScene(Scene):
             if i < r:
                 stop += 1
 
-            for k in range(start, stop):
-                for j in range(num_workers):
+            for j in range(num_workers):
+                for k in range(start, stop):
                     data.append(comm.data[j][k])
             data = VGroup(*data)
             worker.data = data.copy().arrange(RIGHT, worker.blocks_buffer)

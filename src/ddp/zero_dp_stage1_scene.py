@@ -111,7 +111,7 @@ class ZeroDPStage1Scene(CaptionScene):
                 ))
         self.play(AnimationGroup(*anim))
 
-        self.play_caption_replace("Fetch reduced gradients", wait_time=1)
+        self.play_caption_replace("Scatter reduced gradients", wait_time=1)
         for i, network in enumerate(networks):
             anim_network = []
             for j, layer in enumerate(network.layers):

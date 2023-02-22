@@ -2,10 +2,6 @@ from manim import *
 from .neural_network.network import Network
 from src.tools.legend import Legend
 
-config.pixel_height = 1080
-config.pixel_width = 1920
-config.frame_width = 16
-config.frame_height = config.frame_width * config.pixel_height / config.pixel_width
 
 class ForwardBackwardScene(Scene):
     def construct(self):

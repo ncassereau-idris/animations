@@ -1,8 +1,8 @@
 from manim import *
 from manim.mobject.geometry.tips import ArrowTriangleFilledTip
 
-from src.tools.legend import Legend
-from src.tools.utils import FadeInAndRotating
+from ...tools.legend import Legend
+from ...tools.utils import FadeInAndRotating
 
 class MemorySquare(Square):
 
@@ -75,7 +75,7 @@ class Layer(VMobject):
                     tip_width=0.1
                 ).set_z_index(2000)
             )
-        self.update_arrows = VGroup(*arrows)#.fade(1)#.set_opacity(0)
+        self.update_arrows = VGroup(*arrows)
 
     def animate_arrows(self, run_time=1):
         animations = []

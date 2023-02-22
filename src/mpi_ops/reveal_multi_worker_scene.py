@@ -2,10 +2,12 @@ from manim import *
 
 from ..tools.frame import Frame
 from .worker import Worker
+from ..tools.logo import add_logo
 
 class RevealMultiWorkerScene(MovingCameraScene):
 
     def construct(self):
+        add_logo(self)
         num_workers = 4
         cols = 2
 

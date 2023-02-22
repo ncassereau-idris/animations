@@ -1,8 +1,27 @@
 from .network_forward_backward import ForwardBackwardScene
 
-from .tools.legend import Legend
+from .mpi_ops import (
+    MPIAllGatherScene,
+    MPIAllReduceSimplifiedScene,
+    MPIAllReduceScene,
+    MPIAllToAllScene,
+    RevealMultiWorkerScene
+)
+
+from .ddp import (
+    DDPScene,
+    ZeroDPStage1Scene,
+    ZeroDPStage2Scene
+)
 
 __all__ = [
     "ForwardBackwardScene",
-    "Legend"
+    "RevealMultiWorkerScene",
+    "MPIAllGatherScene",
+    "MPIAllToAllScene",
+    "MPIAllReduceSimplifiedScene",
+    "MPIAllReduceScene",
+    "DDPScene",
+    "ZeroDPStage1Scene",
+    "ZeroDPStage2Scene"
 ]

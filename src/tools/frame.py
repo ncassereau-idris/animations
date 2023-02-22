@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from manim import *
-
 from typing import Optional, Any
 
 class Frame(VMobject):
@@ -38,9 +37,12 @@ class Frame(VMobject):
         self.frame = self.make_frame()
         self.place_title()
         self.add(self.frame, self.title)
+        self._data = None
+        self.scale_factor = 1
 
     def scale(self, scale_factor: float, **kwargs) -> Frame:
         self.title_content_buffer *= scale_factor
+        self.scale_factor *= scale_factor
         return super().scale(scale_factor, **kwargs)
 
     def make_frame(self) -> RoundedRectangle:
@@ -80,3 +82,14 @@ class Frame(VMobject):
             aligned_edge=UP
         )
         return value
+
+    def get_data(self) -> VMobject:
+        return self._data
+
+    def set_data(self, value: VMobject) -> None:
+        self._data = self.place_new_content(value)
+
+    def del_data(self) -> None:
+        del self._data
+    
+    data = property(get_data, set_data, del_data)

@@ -49,18 +49,14 @@ class Worker(Frame):
     def make_data(self, num_blocks: int, colors: ColorsColumnRotation) -> VGroup:
         data = [
             Square(color=colors.next(), side_length=0.5, fill_opacity=0.5)
-            for i in range(num_blocks)
+            for _ in range(num_blocks)
         ]
         grp = VGroup(*data)
         return grp.arrange_in_grid(rows=self.rows, cols=self.cols)
 
-    def get_data(self) -> VMobject:
-        return self._data
+    def scene_init(self):
+        self.remove(self.data)
+        return FadeIn(self.data, shift=SMALL_BUFF * DOWN)
 
-    def set_data(self, value: VMobject) -> None:
-        self._data = self.place_new_content(value)
-
-    def del_data(self) -> None:
-        del self._data
-    
-    data = property(get_data, set_data, del_data)
+    def scene_cleanup(self):
+        return FadeOut(self.data)

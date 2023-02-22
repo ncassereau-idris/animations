@@ -1,23 +1,29 @@
 from manim import *
 
 from .prepare_scene import prepare_scene
+from ..tools.logo import add_logo
 
 class MPIAllToAllScene(Scene):
 
     def construct(self):
+        add_logo(self)
         num_workers = 4
         cols = 10
 
-        workers, comm, mpi_ops_title, comm_data = prepare_scene(
+        workers, comm, mpi_ops_title = prepare_scene(
             title="MPI_Alltoall",
             num_workers=num_workers,
             cols=cols
         )
         self.add(workers, comm, mpi_ops_title)
 
+        # Make blocks fade in for smooth starting point
+        self.play(AnimationGroup(*[worker.scene_init() for worker in workers]))
+        self.wait(1)
+
         anim = [
             LaggedStart(*[
-                ReplacementTransform(workers[work_idx].data[i], comm_data[work_idx][i])
+                ReplacementTransform(workers[work_idx].data[i], comm.data[work_idx][i])
                 # do it in the reverse order if on the right side of the screen
                 for i in (
                     range(len(workers[work_idx].data))
@@ -43,16 +49,17 @@ class MPIAllToAllScene(Scene):
 
             for k in range(start, stop):
                 for j in range(num_workers):
-                    data.append(comm_data[j][k])
+                    data.append(comm.data[j][k])
             data = VGroup(*data)
-            target = worker.place_new_content(
-                data.copy().arrange(RIGHT, worker.blocks_buffer)
-            )
+            worker.data = data.copy().arrange(RIGHT, worker.blocks_buffer)
 
             anim.append(LaggedStart(*[
-                Transform(data[j], target[j])
+                ReplacementTransform(data[j], worker.data[j])
                 for j in range(len(data))
             ], lag_ratio=0.025))
 
         self.play(LaggedStart(*anim, lag_ratio=0.5), run_time=5)
         self.wait(1)
+        # Make blocks fade out for smooth ending
+        self.play(AnimationGroup(*[worker.scene_cleanup() for worker in workers]))
+        self.wait(2)

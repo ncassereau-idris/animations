@@ -110,7 +110,7 @@ class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
                     if work_idx >= len(workers) // 2 else
                     range(len(workers[work_idx].data) - 1, -1, -1)
                 )
-            ], lag_ratio=0.025)
+            ], lag_ratio=0)
             for work_idx in range(len(workers))
         ]
 

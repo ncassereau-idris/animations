@@ -2,10 +2,12 @@ from manim import *
 
 from .prepare_scene import prepare_scene
 from ..tools.caption_scene import CaptionScene
+from ..tools.logo import add_logo
 
 class ZeroDPStage2Scene(CaptionScene):
 
     def construct(self):
+        add_logo(self)
         num_workers = 4
         scale = 0.35
 

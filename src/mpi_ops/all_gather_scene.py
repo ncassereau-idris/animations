@@ -1,10 +1,12 @@
 from manim import *
 
 from .prepare_scene import prepare_scene
+from ..tools.logo import add_logo
 
 class MPIAllGatherScene(Scene):
 
     def construct(self):
+        add_logo(self)
         num_workers = 4
         cols = 8
 

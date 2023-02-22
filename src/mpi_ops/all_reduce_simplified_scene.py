@@ -1,10 +1,12 @@
 from manim import *
 
 from .prepare_scene import prepare_scene
+from ..tools.logo import add_logo
 
 class MPIAllReduceSimplifiedScene(Scene): # Allgather then local reduce
 
     def construct(self):
+        add_logo(self)
         num_workers = 4
         cols = 8
 

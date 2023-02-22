@@ -10,7 +10,7 @@ def make_logo() -> ImageMobject:
 def add_logo(scene: Scene) -> None:
     logo = make_logo()
     scene.add(logo)
-    logo_size = 0.10
+    logo_size = 0.05
 
     def updater(mob: Mobject, dt: float):
         if isinstance(scene, MovingCameraScene):

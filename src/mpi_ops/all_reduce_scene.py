@@ -2,11 +2,13 @@ from manim import *
 from itertools import chain
 
 from .prepare_scene import prepare_scene
+from ..tools.logo import add_logo
 from ..tools.caption_scene import CaptionScene
 
 class MPIAllReduceScene(CaptionScene): # All to all then reduce then all gather
 
     def construct(self):
+        add_logo(self)
         lagged_animation_all_to_all = True
         num_workers = 4
         cols = 8
